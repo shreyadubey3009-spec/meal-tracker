@@ -508,7 +508,7 @@ function TodayTab({meals,goals,onDelete,onEdit,setTab}){
           <svg width="100" height="100" viewBox="0 0 110 110">
             <circle cx="55" cy="55" r="52" fill="none" stroke="rgba(255,255,255,.15)" strokeWidth="9"/>
             <circle cx="55" cy="55" r="52" fill="none" stroke=${over?'#fca5a5':'#bbf7d0'} strokeWidth="9"
-              strokeDasharray=${`${(calPct/100*C).toFixed(1)} ${C}`} strokeDashoffset=${C/4} strokeLinecap="round"/>
+              strokeDasharray=${calPct>=100?`${C.toFixed(1)} 0`:`${(calPct/100*C).toFixed(1)} ${C}`} strokeDashoffset=${C/4} strokeLinecap="round"/>
           </svg>
           <div style=${{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'}}>
             <span style=${{fontSize:22}}>🔥</span>
@@ -798,7 +798,7 @@ function App(){
   const [groceryPrompt,setGroceryPrompt]=useState(null);
 
   const ts=todayISO(), todayMeals=allMeals.filter(m=>m.date===ts);
-  const todayCal=todayMeals.reduce((s,m)=>s+m.calories,0), calPct=Math.min(100,rnd((todayCal/goals.calories)*100));
+  const todayCal=todayMeals.reduce((s,m)=>s+m.calories,0), calPct=Math.min(100,rnd((todayCal/goals.calories)*100)), calPctReal=rnd((todayCal/goals.calories)*100);
 
   const setApiKey=k=>{setApiKey_(k);persist('apiKey',k);};
   const setGoals=g=>{setGoals_(g);persist('goals',g);};
@@ -838,10 +838,10 @@ function App(){
                 <circle cx="22" cy="22" r="18" fill="none" stroke="var(--border)" strokeWidth="4"/>
                 <circle cx="22" cy="22" r="18" fill="none"
                   stroke=${todayCal>goals.calories?'#f87171':'var(--primary)'} strokeWidth="4"
-                  strokeDasharray=${`${(calPct/100*113.1).toFixed(1)} 113.1`}
+                  strokeDasharray=${calPct>=100?'113.1 0':`${(calPct/100*113.1).toFixed(1)} 113.1`}
                   strokeDashoffset="28.3" strokeLinecap="round"/>
               </svg>
-              <div style=${{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:800,color:'var(--deep)'}}>${calPct}%</div>
+              <div style=${{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:800,color:'var(--deep)'}}>${calPctReal}%</div>
             </div>
             <button onClick=${()=>setSett(true)} style=${{background:'var(--bg)',border:'1.5px solid var(--border)',borderRadius:11,padding:'8px 10px',cursor:'pointer',fontSize:16,lineHeight:1}}>⚙️</button>
           </div>
