@@ -5,25 +5,55 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Meal Tracker</title>
   <style>
+    :root {
+      --bg:       #f4f8f5;
+      --surface:  #ffffff;
+      --border:   #e4ede6;
+      --primary:  #16a34a;
+      --deep:     #14532d;
+      --light:    #dcfce7;
+      --accent:   #ea580c;
+      --text1:    #111827;
+      --text2:    #4b5563;
+      --text3:    #9ca3af;
+      --red:      #ef4444;
+      --shadow:   0 2px 12px rgba(0,0,0,.07), 0 0 0 1px rgba(0,0,0,.04);
+      --r:        16px;
+    }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0fdf4; color: #111827; }
-    .card { background: #fff; border-radius: 18px; box-shadow: 0 2px 8px rgba(0,0,0,.06), 0 0 0 1px rgba(0,0,0,.04); }
-    .btn-primary { background: #16a34a; color: #fff; border: none; border-radius: 12px; padding: 11px 18px; font-size: 14px; font-weight: 600; cursor: pointer; }
-    .btn-ghost   { background: #fff; color: #6b7280; border: 1.5px solid #e5e7eb; border-radius: 12px; padding: 11px 18px; font-size: 14px; font-weight: 500; cursor: pointer; }
-    input[type=text], input[type=password], input[type=number] { border: 1.5px solid #e5e7eb; border-radius: 12px; padding: 10px 14px; font-size: 14px; color: #111827; outline: none; width: 100%; }
-    input:focus { border-color: #16a34a; box-shadow: 0 0 0 3px rgba(22,163,74,.1); }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text1); }
+    .card  { background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow); }
+    .btn   { border: none; border-radius: 12px; padding: 10px 16px; font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity .15s, transform .1s; }
+    .btn:active { transform: scale(.97); }
+    .btn-p { background: var(--primary); color: #fff; }
+    .btn-g { background: var(--surface); color: var(--text2); border: 1.5px solid var(--border) !important; }
+    .btn-r { background: var(--red); color: #fff; }
+    input[type=text], input[type=password], input[type=number] {
+      border: 1.5px solid var(--border); border-radius: 12px; padding: 10px 14px;
+      font-size: 14px; color: var(--text1); outline: none; width: 100%; background: var(--surface);
+    }
+    input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(22,163,74,.12); }
     ::-webkit-scrollbar { width: 0; }
+    .tab-btn { flex: 1; padding: 13px 6px; font-size: 13px; font-weight: 700; border: none; background: none; cursor: pointer; color: var(--text3); border-bottom: 2.5px solid transparent; transition: color .15s, border-color .15s; }
+    .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+    .seg { display: flex; background: #e8f0ea; border-radius: 14px; padding: 4px; gap: 4px; }
+    .seg-btn { flex: 1; padding: 8px; border: none; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--text3); background: transparent; transition: all .15s; }
+    .seg-btn.active { background: var(--surface); color: var(--text1); box-shadow: 0 1px 5px rgba(0,0,0,.1); }
     @keyframes blink { 0%,80%,100%{opacity:0} 40%{opacity:1} }
-    .dot { display:inline-block; width:7px; height:7px; border-radius:99px; background:#94a3b8; animation: blink 1.4s ease-in-out infinite; }
-    .dot:nth-child(2) { animation-delay:.2s; }
-    .dot:nth-child(3) { animation-delay:.4s; }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    .dot { display:inline-block;width:7px;height:7px;border-radius:99px;background:#94a3b8;animation:blink 1.4s ease-in-out infinite; }
+    .dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
+    @keyframes spin { to{transform:rotate(360deg)} }
     .spin { animation: spin .8s linear infinite; }
     .bar-fill { transition: width .5s cubic-bezier(.4,0,.2,1); }
-    .user-bubble { background: #16a34a; color: #fff; border-radius: 20px 20px 4px 20px; }
-    .ai-bubble   { background: #f1f5f9; color: #1e293b; border-radius: 20px 20px 20px 4px; }
-    .seg-btn { border: none; border-radius: 10px; padding: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .15s; }
-    .tab-btn { flex: 1; padding: 12px 8px; font-size: 13px; font-weight: 700; border: none; background: none; cursor: pointer; transition: color .15s; border-bottom: 2px solid transparent; }
+    .user-bubble { background: var(--primary); color:#fff; border-radius:20px 20px 4px 20px; }
+    .ai-bubble   { background: #f1f5f9; color:#1e293b; border-radius:20px 20px 20px 4px; }
+    .sheet-backdrop { position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;z-index:50; }
+    .sheet { background:#fff;border-radius:24px 24px 0 0;padding:20px 20px 36px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 -20px 60px rgba(0,0,0,.15); }
+    .drag-handle { width:40px;height:4px;background:var(--border);border-radius:99px;margin:0 auto 20px; }
+    .icon-btn { background:none;border:none;cursor:pointer;padding:6px;border-radius:8px;font-size:16px;line-height:1;color:var(--text3);transition:color .15s,background .15s; }
+    .icon-btn:hover { color:var(--text1);background:var(--bg); }
+    .icon-btn.danger:hover { color:var(--red);background:#fef2f2; }
+    .badge { display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;padding:3px 8px;border-radius:99px; }
   </style>
 </head>
 <body>
@@ -35,783 +65,806 @@ import { createElement } from 'https://esm.sh/react@18';
 import htm from 'https://esm.sh/htm@3';
 const html = htm.bind(createElement);
 
-// ── Constants ─────────────────────────────────────────────────────────────────
+// ── Config ────────────────────────────────────────────────────────────────────
 const DAYS       = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 const MEAL_TYPES = ['Breakfast','Lunch','Dinner','Snack'];
 const GOALS_DEF  = { calories:2000, protein:150, carbs:250, fat:65 };
-
-const MEAL_META = {
-  Breakfast: { emoji:'🌅', bg:'#fff7ed', fg:'#c2410c' },
-  Lunch:     { emoji:'☀️',  bg:'#f0fdf4', fg:'#15803d' },
-  Dinner:    { emoji:'🌙', bg:'#eef2ff', fg:'#4338ca' },
-  Snack:     { emoji:'🍎', bg:'#fdf2f8', fg:'#9d174d' },
+const MEAL_META  = {
+  Breakfast:{ emoji:'🌅', bg:'#fff7ed', fg:'#c2410c' },
+  Lunch:    { emoji:'☀️',  bg:'#f0fdf4', fg:'#15803d' },
+  Dinner:   { emoji:'🌙', bg:'#eef2ff', fg:'#4338ca' },
+  Snack:    { emoji:'🍎', bg:'#fdf2f8', fg:'#9d174d' },
 };
-const CAT_EMOJI = { Protein:'🥩', Grain:'🌾', Fruit:'🍎', Vegetable:'🥦', Dairy:'🧀', Nuts:'🥜', Oil:'🫒', Snack:'🍫', Database:'📦' };
+const CAT_EMOJI = { Protein:'🥩',Grain:'🌾',Fruit:'🍎',Vegetable:'🥦',Dairy:'🧀',Nuts:'🥜',Oil:'🫒',Snack:'🍫',Database:'📦' };
 const MACRO_CFG = [
   { key:'protein', label:'Protein', emoji:'💪', color:'#3b82f6', light:'#eff6ff' },
   { key:'carbs',   label:'Carbs',   emoji:'🌾', color:'#f97316', light:'#fff7ed' },
   { key:'fat',     label:'Fat',     emoji:'🥑', color:'#eab308', light:'#fefce8' },
 ];
 
-// ── Persistence ───────────────────────────────────────────────────────────────
-const load   = (k,fb) => { try { const v=localStorage.getItem(k); return v?JSON.parse(v):fb; } catch { return fb; } };
+// ── Storage ───────────────────────────────────────────────────────────────────
+const load   = (k,fb) => { try{ const v=localStorage.getItem(k); return v?JSON.parse(v):fb; }catch{ return fb; } };
 const persist = (k,v) => localStorage.setItem(k,JSON.stringify(v));
 
-// ── Food database (per 100 g) ─────────────────────────────────────────────────
+// ── Food DB ───────────────────────────────────────────────────────────────────
 const DB = [
-  {id:'1', name:'Chicken Breast',      cat:'Protein',   cal:165, p:31,  c:0,   f:3.6, sv:[{l:'100 g',g:100},{l:'Small (120 g)',g:120},{l:'Medium (170 g)',g:170},{l:'Large (220 g)',g:220}]},
-  {id:'2', name:'Salmon',              cat:'Protein',   cal:208, p:20,  c:0,   f:13,  sv:[{l:'100 g',g:100},{l:'Small fillet (120 g)',g:120},{l:'Large fillet (180 g)',g:180}]},
-  {id:'3', name:'Canned Tuna',         cat:'Protein',   cal:116, p:26,  c:0,   f:1,   sv:[{l:'Small can (85 g)',g:85},{l:'Large can (165 g)',g:165},{l:'100 g',g:100}]},
-  {id:'4', name:'Eggs',                cat:'Protein',   cal:155, p:13,  c:1,   f:11,  sv:[{l:'1 egg (50 g)',g:50},{l:'2 eggs (100 g)',g:100},{l:'3 eggs (150 g)',g:150}]},
-  {id:'5', name:'Greek Yogurt (0%)',   cat:'Protein',   cal:59,  p:10,  c:4,   f:0,   sv:[{l:'100 g',g:100},{l:'Small (150 g)',g:150},{l:'Large (200 g)',g:200}]},
-  {id:'6', name:'Cottage Cheese',      cat:'Protein',   cal:72,  p:11,  c:3,   f:1,   sv:[{l:'½ cup (113 g)',g:113},{l:'1 cup (226 g)',g:226}]},
-  {id:'7', name:'Tofu (firm)',          cat:'Protein',   cal:76,  p:8,   c:2,   f:4,   sv:[{l:'100 g',g:100},{l:'½ block (200 g)',g:200}]},
-  {id:'8', name:'Shrimp',              cat:'Protein',   cal:99,  p:24,  c:0,   f:0.3, sv:[{l:'100 g',g:100},{l:'6 large (85 g)',g:85}]},
-  {id:'9', name:'Ground Beef (80/20)', cat:'Protein',   cal:250, p:26,  c:0,   f:16,  sv:[{l:'100 g',g:100},{l:'Patty (90 g)',g:90},{l:'Large (150 g)',g:150}]},
-  {id:'10',name:'Lentils (cooked)',    cat:'Protein',   cal:116, p:9,   c:20,  f:0.4, sv:[{l:'½ cup (100 g)',g:100},{l:'1 cup (200 g)',g:200}]},
-  {id:'11',name:'Chickpeas (cooked)',  cat:'Protein',   cal:164, p:9,   c:27,  f:2.6, sv:[{l:'½ cup (82 g)',g:82},{l:'1 cup (164 g)',g:164}]},
-  {id:'12',name:'Turkey Breast',       cat:'Protein',   cal:135, p:29,  c:0,   f:1,   sv:[{l:'Slice (30 g)',g:30},{l:'100 g',g:100},{l:'Medium (170 g)',g:170}]},
-  {id:'13',name:'White Rice (cooked)', cat:'Grain',     cal:130, p:2.7, c:28,  f:0.3, sv:[{l:'½ cup (80 g)',g:80},{l:'1 cup (158 g)',g:158},{l:'Large (250 g)',g:250}]},
-  {id:'14',name:'Brown Rice (cooked)', cat:'Grain',     cal:112, p:2.6, c:24,  f:0.9, sv:[{l:'½ cup (98 g)',g:98},{l:'1 cup (196 g)',g:196}]},
-  {id:'15',name:'Oats (cooked)',       cat:'Grain',     cal:71,  p:2.5, c:12,  f:1.5, sv:[{l:'½ cup (117 g)',g:117},{l:'1 cup (234 g)',g:234}]},
-  {id:'16',name:'Pasta (cooked)',      cat:'Grain',     cal:131, p:5,   c:25,  f:1.1, sv:[{l:'1 cup (140 g)',g:140},{l:'Large (200 g)',g:200}]},
-  {id:'17',name:'Whole Wheat Bread',   cat:'Grain',     cal:247, p:9,   c:41,  f:3.5, sv:[{l:'1 slice (32 g)',g:32},{l:'2 slices (64 g)',g:64}]},
-  {id:'18',name:'White Bread',         cat:'Grain',     cal:265, p:9,   c:49,  f:3.2, sv:[{l:'1 slice (25 g)',g:25},{l:'2 slices (50 g)',g:50}]},
-  {id:'19',name:'Quinoa (cooked)',     cat:'Grain',     cal:120, p:4.4, c:22,  f:1.9, sv:[{l:'½ cup (92 g)',g:92},{l:'1 cup (185 g)',g:185}]},
-  {id:'20',name:'Flour Tortilla',      cat:'Grain',     cal:218, p:6,   c:36,  f:6,   sv:[{l:'Small 6" (30 g)',g:30},{l:'Medium 8" (45 g)',g:45},{l:'Large 10" (72 g)',g:72}]},
-  {id:'21',name:'Bagel',               cat:'Grain',     cal:257, p:10,  c:50,  f:1.6, sv:[{l:'Mini (70 g)',g:70},{l:'Regular (105 g)',g:105}]},
-  {id:'22',name:'Apple',               cat:'Fruit',     cal:52,  p:0.3, c:14,  f:0.2, sv:[{l:'Small (150 g)',g:150},{l:'Medium (182 g)',g:182},{l:'Large (223 g)',g:223}]},
-  {id:'23',name:'Banana',              cat:'Fruit',     cal:89,  p:1.1, c:23,  f:0.3, sv:[{l:'Small (100 g)',g:100},{l:'Medium (118 g)',g:118},{l:'Large (136 g)',g:136}]},
-  {id:'24',name:'Orange',              cat:'Fruit',     cal:47,  p:0.9, c:12,  f:0.1, sv:[{l:'Small (130 g)',g:130},{l:'Medium (180 g)',g:180}]},
-  {id:'25',name:'Strawberries',        cat:'Fruit',     cal:32,  p:0.7, c:8,   f:0.3, sv:[{l:'½ cup (76 g)',g:76},{l:'1 cup (152 g)',g:152}]},
-  {id:'26',name:'Blueberries',         cat:'Fruit',     cal:57,  p:0.7, c:14,  f:0.3, sv:[{l:'½ cup (74 g)',g:74},{l:'1 cup (148 g)',g:148}]},
-  {id:'27',name:'Avocado',             cat:'Fruit',     cal:160, p:2,   c:9,   f:15,  sv:[{l:'½ (68 g)',g:68},{l:'Whole (136 g)',g:136}]},
-  {id:'28',name:'Mango',               cat:'Fruit',     cal:60,  p:0.8, c:15,  f:0.4, sv:[{l:'½ (100 g)',g:100},{l:'Whole (200 g)',g:200}]},
-  {id:'29',name:'Grapes',              cat:'Fruit',     cal:69,  p:0.7, c:18,  f:0.2, sv:[{l:'½ cup (80 g)',g:80},{l:'1 cup (160 g)',g:160}]},
-  {id:'30',name:'Broccoli',            cat:'Vegetable', cal:34,  p:2.8, c:7,   f:0.4, sv:[{l:'1 cup (91 g)',g:91},{l:'2 cups (182 g)',g:182},{l:'100 g',g:100}]},
-  {id:'31',name:'Spinach (raw)',        cat:'Vegetable', cal:23,  p:2.9, c:3.6, f:0.4, sv:[{l:'1 cup (30 g)',g:30},{l:'2 cups (60 g)',g:60},{l:'100 g',g:100}]},
-  {id:'32',name:'Carrot',              cat:'Vegetable', cal:41,  p:0.9, c:10,  f:0.2, sv:[{l:'1 medium (61 g)',g:61},{l:'100 g',g:100}]},
-  {id:'33',name:'Sweet Potato (baked)',cat:'Vegetable', cal:90,  p:2,   c:21,  f:0.1, sv:[{l:'Small (130 g)',g:130},{l:'Medium (180 g)',g:180},{l:'Large (250 g)',g:250}]},
-  {id:'34',name:'Potato (baked)',      cat:'Vegetable', cal:93,  p:2.5, c:21,  f:0.1, sv:[{l:'Small (150 g)',g:150},{l:'Medium (220 g)',g:220}]},
-  {id:'35',name:'Bell Pepper',         cat:'Vegetable', cal:31,  p:1,   c:6,   f:0.3, sv:[{l:'½ (60 g)',g:60},{l:'1 medium (120 g)',g:120}]},
-  {id:'36',name:'Kale',                cat:'Vegetable', cal:49,  p:4.3, c:9,   f:0.9, sv:[{l:'1 cup (67 g)',g:67},{l:'100 g',g:100}]},
-  {id:'37',name:'Tomato',              cat:'Vegetable', cal:18,  p:0.9, c:3.9, f:0.2, sv:[{l:'Small (90 g)',g:90},{l:'Medium (123 g)',g:123}]},
-  {id:'38',name:'Whole Milk',          cat:'Dairy',     cal:61,  p:3.2, c:4.8, f:3.3, sv:[{l:'½ cup (120 ml)',g:120},{l:'1 cup (240 ml)',g:240}]},
-  {id:'39',name:'Oat Milk',            cat:'Dairy',     cal:45,  p:1,   c:7,   f:1.5, sv:[{l:'½ cup (120 ml)',g:120},{l:'1 cup (240 ml)',g:240}]},
-  {id:'40',name:'Cheddar Cheese',      cat:'Dairy',     cal:402, p:25,  c:1.3, f:33,  sv:[{l:'1 slice (28 g)',g:28},{l:'½ cup shredded (56 g)',g:56}]},
-  {id:'41',name:'Mozzarella',          cat:'Dairy',     cal:280, p:22,  c:2.2, f:17,  sv:[{l:'1 slice (28 g)',g:28},{l:'100 g',g:100}]},
-  {id:'42',name:'Butter',              cat:'Dairy',     cal:717, p:0.9, c:0.1, f:81,  sv:[{l:'1 tsp (5 g)',g:5},{l:'1 tbsp (14 g)',g:14}]},
-  {id:'43',name:'Almonds',             cat:'Nuts',      cal:579, p:21,  c:22,  f:50,  sv:[{l:'10 almonds (14 g)',g:14},{l:'¼ cup (35 g)',g:35}]},
-  {id:'44',name:'Walnuts',             cat:'Nuts',      cal:654, p:15,  c:14,  f:65,  sv:[{l:'1 oz (28 g)',g:28},{l:'¼ cup (29 g)',g:29}]},
-  {id:'45',name:'Peanut Butter',       cat:'Nuts',      cal:588, p:25,  c:20,  f:50,  sv:[{l:'1 tbsp (16 g)',g:16},{l:'2 tbsp (32 g)',g:32}]},
-  {id:'46',name:'Almond Butter',       cat:'Nuts',      cal:614, p:21,  c:19,  f:56,  sv:[{l:'1 tbsp (16 g)',g:16},{l:'2 tbsp (32 g)',g:32}]},
-  {id:'47',name:'Chia Seeds',          cat:'Nuts',      cal:486, p:17,  c:42,  f:31,  sv:[{l:'1 tbsp (12 g)',g:12},{l:'2 tbsp (24 g)',g:24}]},
-  {id:'48',name:'Olive Oil',           cat:'Oil',       cal:884, p:0,   c:0,   f:100, sv:[{l:'1 tsp (4 g)',g:4},{l:'1 tbsp (14 g)',g:14}]},
-  {id:'49',name:'Dark Chocolate 70%',  cat:'Snack',     cal:598, p:7.8, c:46,  f:43,  sv:[{l:'1 square (10 g)',g:10},{l:'Small bar (40 g)',g:40}]},
-  {id:'50',name:'Potato Chips',        cat:'Snack',     cal:536, p:7,   c:53,  f:35,  sv:[{l:'Small bag (28 g)',g:28},{l:'50 g',g:50}]},
-  {id:'51',name:'Popcorn',             cat:'Snack',     cal:375, p:11,  c:74,  f:4.5, sv:[{l:'1 cup (8 g)',g:8},{l:'3 cups (24 g)',g:24}]},
-  {id:'52',name:'Granola',             cat:'Snack',     cal:471, p:10,  c:64,  f:20,  sv:[{l:'¼ cup (30 g)',g:30},{l:'½ cup (60 g)',g:60}]},
-  {id:'53',name:'Rice Cake',           cat:'Snack',     cal:387, p:8,   c:82,  f:2.9, sv:[{l:'1 cake (9 g)',g:9},{l:'2 cakes (18 g)',g:18}]},
+  {id:'1', name:'Chicken Breast',      cat:'Protein',   cal:165,p:31,  c:0,  f:3.6,sv:[{l:'100 g',g:100},{l:'Small (120 g)',g:120},{l:'Medium (170 g)',g:170},{l:'Large (220 g)',g:220}]},
+  {id:'2', name:'Salmon',              cat:'Protein',   cal:208,p:20,  c:0,  f:13, sv:[{l:'100 g',g:100},{l:'Small fillet (120 g)',g:120},{l:'Large fillet (180 g)',g:180}]},
+  {id:'3', name:'Canned Tuna',         cat:'Protein',   cal:116,p:26,  c:0,  f:1,  sv:[{l:'Small can (85 g)',g:85},{l:'Large can (165 g)',g:165},{l:'100 g',g:100}]},
+  {id:'4', name:'Eggs',                cat:'Protein',   cal:155,p:13,  c:1,  f:11, sv:[{l:'1 egg (50 g)',g:50},{l:'2 eggs (100 g)',g:100},{l:'3 eggs (150 g)',g:150}]},
+  {id:'5', name:'Greek Yogurt (0%)',   cat:'Protein',   cal:59, p:10,  c:4,  f:0,  sv:[{l:'100 g',g:100},{l:'Small (150 g)',g:150},{l:'Large (200 g)',g:200}]},
+  {id:'6', name:'Cottage Cheese',      cat:'Protein',   cal:72, p:11,  c:3,  f:1,  sv:[{l:'½ cup (113 g)',g:113},{l:'1 cup (226 g)',g:226}]},
+  {id:'7', name:'Tofu (firm)',          cat:'Protein',   cal:76, p:8,   c:2,  f:4,  sv:[{l:'100 g',g:100},{l:'½ block (200 g)',g:200}]},
+  {id:'8', name:'Shrimp',              cat:'Protein',   cal:99, p:24,  c:0,  f:0.3,sv:[{l:'100 g',g:100},{l:'6 large (85 g)',g:85}]},
+  {id:'9', name:'Ground Beef (80/20)', cat:'Protein',   cal:250,p:26,  c:0,  f:16, sv:[{l:'100 g',g:100},{l:'Patty (90 g)',g:90},{l:'Large (150 g)',g:150}]},
+  {id:'10',name:'Lentils (cooked)',    cat:'Protein',   cal:116,p:9,   c:20, f:0.4,sv:[{l:'½ cup (100 g)',g:100},{l:'1 cup (200 g)',g:200}]},
+  {id:'11',name:'Chickpeas (cooked)',  cat:'Protein',   cal:164,p:9,   c:27, f:2.6,sv:[{l:'½ cup (82 g)',g:82},{l:'1 cup (164 g)',g:164}]},
+  {id:'12',name:'Turkey Breast',       cat:'Protein',   cal:135,p:29,  c:0,  f:1,  sv:[{l:'Slice (30 g)',g:30},{l:'100 g',g:100},{l:'Medium (170 g)',g:170}]},
+  {id:'13',name:'White Rice (cooked)', cat:'Grain',     cal:130,p:2.7, c:28, f:0.3,sv:[{l:'½ cup (80 g)',g:80},{l:'1 cup (158 g)',g:158},{l:'Large (250 g)',g:250}]},
+  {id:'14',name:'Brown Rice (cooked)', cat:'Grain',     cal:112,p:2.6, c:24, f:0.9,sv:[{l:'½ cup (98 g)',g:98},{l:'1 cup (196 g)',g:196}]},
+  {id:'15',name:'Oats (cooked)',       cat:'Grain',     cal:71, p:2.5, c:12, f:1.5,sv:[{l:'½ cup (117 g)',g:117},{l:'1 cup (234 g)',g:234}]},
+  {id:'16',name:'Pasta (cooked)',      cat:'Grain',     cal:131,p:5,   c:25, f:1.1,sv:[{l:'1 cup (140 g)',g:140},{l:'Large (200 g)',g:200}]},
+  {id:'17',name:'Whole Wheat Bread',   cat:'Grain',     cal:247,p:9,   c:41, f:3.5,sv:[{l:'1 slice (32 g)',g:32},{l:'2 slices (64 g)',g:64}]},
+  {id:'18',name:'White Bread',         cat:'Grain',     cal:265,p:9,   c:49, f:3.2,sv:[{l:'1 slice (25 g)',g:25},{l:'2 slices (50 g)',g:50}]},
+  {id:'19',name:'Quinoa (cooked)',     cat:'Grain',     cal:120,p:4.4, c:22, f:1.9,sv:[{l:'½ cup (92 g)',g:92},{l:'1 cup (185 g)',g:185}]},
+  {id:'20',name:'Flour Tortilla',      cat:'Grain',     cal:218,p:6,   c:36, f:6,  sv:[{l:'Small 6" (30 g)',g:30},{l:'Medium 8" (45 g)',g:45},{l:'Large 10" (72 g)',g:72}]},
+  {id:'21',name:'Bagel',               cat:'Grain',     cal:257,p:10,  c:50, f:1.6,sv:[{l:'Mini (70 g)',g:70},{l:'Regular (105 g)',g:105}]},
+  {id:'22',name:'Apple',               cat:'Fruit',     cal:52, p:0.3, c:14, f:0.2,sv:[{l:'Small (150 g)',g:150},{l:'Medium (182 g)',g:182},{l:'Large (223 g)',g:223}]},
+  {id:'23',name:'Banana',              cat:'Fruit',     cal:89, p:1.1, c:23, f:0.3,sv:[{l:'Small (100 g)',g:100},{l:'Medium (118 g)',g:118},{l:'Large (136 g)',g:136}]},
+  {id:'24',name:'Orange',              cat:'Fruit',     cal:47, p:0.9, c:12, f:0.1,sv:[{l:'Small (130 g)',g:130},{l:'Medium (180 g)',g:180}]},
+  {id:'25',name:'Strawberries',        cat:'Fruit',     cal:32, p:0.7, c:8,  f:0.3,sv:[{l:'½ cup (76 g)',g:76},{l:'1 cup (152 g)',g:152}]},
+  {id:'26',name:'Blueberries',         cat:'Fruit',     cal:57, p:0.7, c:14, f:0.3,sv:[{l:'½ cup (74 g)',g:74},{l:'1 cup (148 g)',g:148}]},
+  {id:'27',name:'Avocado',             cat:'Fruit',     cal:160,p:2,   c:9,  f:15, sv:[{l:'½ (68 g)',g:68},{l:'Whole (136 g)',g:136}]},
+  {id:'28',name:'Mango',               cat:'Fruit',     cal:60, p:0.8, c:15, f:0.4,sv:[{l:'½ (100 g)',g:100},{l:'Whole (200 g)',g:200}]},
+  {id:'29',name:'Grapes',              cat:'Fruit',     cal:69, p:0.7, c:18, f:0.2,sv:[{l:'½ cup (80 g)',g:80},{l:'1 cup (160 g)',g:160}]},
+  {id:'30',name:'Broccoli',            cat:'Vegetable', cal:34, p:2.8, c:7,  f:0.4,sv:[{l:'1 cup (91 g)',g:91},{l:'2 cups (182 g)',g:182}]},
+  {id:'31',name:'Spinach (raw)',        cat:'Vegetable', cal:23, p:2.9, c:3.6,f:0.4,sv:[{l:'1 cup (30 g)',g:30},{l:'2 cups (60 g)',g:60}]},
+  {id:'32',name:'Carrot',              cat:'Vegetable', cal:41, p:0.9, c:10, f:0.2,sv:[{l:'1 medium (61 g)',g:61},{l:'100 g',g:100}]},
+  {id:'33',name:'Sweet Potato (baked)',cat:'Vegetable', cal:90, p:2,   c:21, f:0.1,sv:[{l:'Small (130 g)',g:130},{l:'Medium (180 g)',g:180},{l:'Large (250 g)',g:250}]},
+  {id:'34',name:'Potato (baked)',      cat:'Vegetable', cal:93, p:2.5, c:21, f:0.1,sv:[{l:'Small (150 g)',g:150},{l:'Medium (220 g)',g:220}]},
+  {id:'35',name:'Bell Pepper',         cat:'Vegetable', cal:31, p:1,   c:6,  f:0.3,sv:[{l:'½ (60 g)',g:60},{l:'1 medium (120 g)',g:120}]},
+  {id:'36',name:'Kale',                cat:'Vegetable', cal:49, p:4.3, c:9,  f:0.9,sv:[{l:'1 cup (67 g)',g:67},{l:'100 g',g:100}]},
+  {id:'37',name:'Tomato',              cat:'Vegetable', cal:18, p:0.9, c:3.9,f:0.2,sv:[{l:'Small (90 g)',g:90},{l:'Medium (123 g)',g:123}]},
+  {id:'38',name:'Whole Milk',          cat:'Dairy',     cal:61, p:3.2, c:4.8,f:3.3,sv:[{l:'½ cup (120 ml)',g:120},{l:'1 cup (240 ml)',g:240}]},
+  {id:'39',name:'Oat Milk',            cat:'Dairy',     cal:45, p:1,   c:7,  f:1.5,sv:[{l:'½ cup (120 ml)',g:120},{l:'1 cup (240 ml)',g:240}]},
+  {id:'40',name:'Cheddar Cheese',      cat:'Dairy',     cal:402,p:25,  c:1.3,f:33, sv:[{l:'1 slice (28 g)',g:28},{l:'½ cup shredded (56 g)',g:56}]},
+  {id:'41',name:'Mozzarella',          cat:'Dairy',     cal:280,p:22,  c:2.2,f:17, sv:[{l:'1 slice (28 g)',g:28},{l:'100 g',g:100}]},
+  {id:'42',name:'Butter',              cat:'Dairy',     cal:717,p:0.9, c:0.1,f:81, sv:[{l:'1 tsp (5 g)',g:5},{l:'1 tbsp (14 g)',g:14}]},
+  {id:'43',name:'Almonds',             cat:'Nuts',      cal:579,p:21,  c:22, f:50, sv:[{l:'10 almonds (14 g)',g:14},{l:'¼ cup (35 g)',g:35}]},
+  {id:'44',name:'Peanut Butter',       cat:'Nuts',      cal:588,p:25,  c:20, f:50, sv:[{l:'1 tbsp (16 g)',g:16},{l:'2 tbsp (32 g)',g:32}]},
+  {id:'45',name:'Chia Seeds',          cat:'Nuts',      cal:486,p:17,  c:42, f:31, sv:[{l:'1 tbsp (12 g)',g:12},{l:'2 tbsp (24 g)',g:24}]},
+  {id:'46',name:'Olive Oil',           cat:'Oil',       cal:884,p:0,   c:0,  f:100,sv:[{l:'1 tsp (4 g)',g:4},{l:'1 tbsp (14 g)',g:14}]},
+  {id:'47',name:'Dark Chocolate 70%',  cat:'Snack',     cal:598,p:7.8, c:46, f:43, sv:[{l:'1 square (10 g)',g:10},{l:'Small bar (40 g)',g:40}]},
+  {id:'48',name:'Potato Chips',        cat:'Snack',     cal:536,p:7,   c:53, f:35, sv:[{l:'Small bag (28 g)',g:28},{l:'50 g',g:50}]},
+  {id:'49',name:'Granola',             cat:'Snack',     cal:471,p:10,  c:64, f:20, sv:[{l:'¼ cup (30 g)',g:30},{l:'½ cup (60 g)',g:60}]},
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-const rnd      = n => Math.round(n);
-const todayISO = () => new Date().toISOString().slice(0,10);
-const nowTime  = () => new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
-const calcNut  = (f,g) => ({ calories:rnd(f.cal*g/100), protein:rnd(f.p*g/100), carbs:rnd(f.c*g/100), fat:rnd(f.f*g/100) });
-const dbSearch = q => { if(!q.trim()) return []; const lq=q.toLowerCase(); return DB.filter(f=>f.name.toLowerCase().includes(lq)||f.cat.toLowerCase().includes(lq)); };
+const rnd       = n => Math.round(n);
+const todayISO  = () => new Date().toISOString().slice(0,10);
+const nowTime   = () => new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+const calcNut   = (f,g) => ({ calories:rnd(f.cal*g/100), protein:rnd(f.p*g/100), carbs:rnd(f.c*g/100), fat:rnd(f.f*g/100) });
+const dbSearch  = q => { if(!q.trim()) return []; const lq=q.toLowerCase(); return DB.filter(f=>f.name.toLowerCase().includes(lq)||f.cat.toLowerCase().includes(lq)); };
+const newId     = () => Date.now() + Math.random();
 
-function useDebounce(val, ms) {
-  const [dv,setDv]=useState(val);
-  useEffect(()=>{ const t=setTimeout(()=>setDv(val),ms); return ()=>clearTimeout(t); },[val,ms]);
-  return dv;
+function useDebounce(val,ms){ const [d,setD]=useState(val); useEffect(()=>{const t=setTimeout(()=>setD(val),ms);return()=>clearTimeout(t);},[val,ms]); return d; }
+
+// ── TDEE ──────────────────────────────────────────────────────────────────────
+function calcTDEE({sex,age,weight,height,activity,goal}){
+  const bmr=(10*weight)+(6.25*height)-(5*age)+(sex==='male'?5:-161);
+  const mult={sedentary:1.2,light:1.375,moderate:1.55,active:1.725,veryactive:1.9}[activity]||1.55;
+  const adj={lose:-500,maintain:0,gain:300}[goal]||0;
+  const calories=rnd(bmr*mult+adj), protein=rnd(weight*2.0);
+  const fat=rnd((calories*.27)/9), carbs=Math.max(0,rnd((calories-protein*4-fat*9)/4));
+  return {calories,protein,carbs,fat};
 }
 
-// ── TDEE Calculator ───────────────────────────────────────────────────────────
-function calcTDEE({ sex, age, weight, height, activity, goal }) {
-  const bmr = (10*weight) + (6.25*height) - (5*age) + (sex==='male' ? 5 : -161);
-  const mult = { sedentary:1.2, light:1.375, moderate:1.55, active:1.725, veryactive:1.9 }[activity] || 1.55;
-  const adj  = { lose:-500, maintain:0, gain:300 }[goal] || 0;
-  const calories = rnd(bmr * mult + adj);
-  const protein  = rnd(weight * 2.0);
-  const fat      = rnd((calories * 0.27) / 9);
-  const carbs    = Math.max(0, rnd((calories - protein*4 - fat*9) / 4));
-  return { calories, protein, carbs, fat };
-}
-
-// ── Claude API ────────────────────────────────────────────────────────────────
-async function callClaude(messages, apiKey) {
-  const system = `You are a nutrition assistant. Respond ONLY with valid JSON:
+// ── APIs ──────────────────────────────────────────────────────────────────────
+async function callClaude(messages,apiKey){
+  const system=`You are a nutrition assistant. Respond ONLY with valid JSON:
 {"meals":[{"name":"string","mealType":"Breakfast|Lunch|Dinner|Snack","calories":number,"protein":number,"carbs":number,"fat":number,"notes":"string"}],"message":"string"}
-Round all numbers. Use realistic portions. Group items as one meal unless clearly separate occasions. If unclear: {"meals":[],"message":"clarifying question"}.`;
-  const res = await fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',
+Round all numbers. Realistic portions. Group as one meal unless clearly separate. If unclear: {"meals":[],"message":"question"}.`;
+  const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
     headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-    body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1024,system,messages})
-  });
-  if(!res.ok){ const e=await res.json().catch(()=>({})); throw new Error(e?.error?.message||`Error ${res.status}`); }
-  const data=await res.json();
-  const m=data.content[0].text.match(/\{[\s\S]*\}/);
+    body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1024,system,messages})});
+  if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e?.error?.message||`Error ${res.status}`);}
+  const data=await res.json(), m=data.content[0].text.match(/\{[\s\S]*\}/);
   if(!m) throw new Error('Invalid response');
   return JSON.parse(m[0]);
 }
-
-async function searchOFF(query) {
+async function searchOFF(query){
   const res=await fetch(`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&json=1&page_size=8&sort_by=unique_scans_n`);
   if(!res.ok) return [];
   const data=await res.json();
-  return (data.products||[]).filter(p=>{
-    const n=p.nutriments;
-    return p.product_name?.trim()&&n&&(n['energy-kcal_100g']||n['energy_100g']);
-  }).map(p=>{
-    const n=p.nutriments;
-    const cal=n['energy-kcal_100g']||rnd((n['energy_100g']||0)/4.184);
-    const sg=parseFloat(p.serving_size)||null;
-    return { id:'off_'+(p.code||Math.random()), name:p.product_name.trim(), cat:'Database',
-      cal:rnd(cal), p:rnd(n['proteins_100g']||0), c:rnd(n['carbohydrates_100g']||0), f:rnd(n['fat_100g']||0),
-      sv:sg?[{l:`1 serving (${p.serving_size})`,g:sg},{l:'100 g',g:100}]:[{l:'100 g',g:100}], source:'off' };
-  }).slice(0,6);
+  return (data.products||[]).filter(p=>{const n=p.nutriments;return p.product_name?.trim()&&n&&(n['energy-kcal_100g']||n['energy_100g']);})
+    .map(p=>{const n=p.nutriments,cal=n['energy-kcal_100g']||rnd((n['energy_100g']||0)/4.184),sg=parseFloat(p.serving_size)||null;
+      return{id:'off_'+(p.code||Math.random()),name:p.product_name.trim(),cat:'Database',cal:rnd(cal),
+        p:rnd(n['proteins_100g']||0),c:rnd(n['carbohydrates_100g']||0),f:rnd(n['fat_100g']||0),
+        sv:sg?[{l:`1 serving (${p.serving_size})`,g:sg},{l:'100 g',g:100}]:[{l:'100 g',g:100}],source:'off'};}).slice(0,6);
 }
 
-// ── Shared UI ─────────────────────────────────────────────────────────────────
-function TypeBadge({ type }) {
-  const m = MEAL_META[type] || { emoji:'🍽️', bg:'#f1f5f9', fg:'#374151' };
-  return html`<span style=${{fontSize:11,fontWeight:700,padding:'3px 8px',borderRadius:99,background:m.bg,color:m.fg,display:'inline-flex',alignItems:'center',gap:3}}>
-    ${m.emoji} ${type}
-  </span>`;
+// ── Shared components ─────────────────────────────────────────────────────────
+function TypeBadge({type}){
+  const m=MEAL_META[type]||{emoji:'🍽️',bg:'#f1f5f9',fg:'#374151'};
+  return html`<span className="badge" style=${{background:m.bg,color:m.fg}}>${m.emoji} ${type}</span>`;
 }
 
-function MacroBar({ cfg, value, goal }) {
-  const pct = Math.min(100,rnd((value/goal)*100));
-  const over = value > goal;
+function MacroBar({cfg,value,goal}){
+  const pct=Math.min(100,rnd((value/goal)*100)), over=value>goal;
   return html`
-    <div style=${{background:cfg.light,borderRadius:14,padding:'12px 14px'}}>
-      <div style=${{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
-        <span style=${{fontSize:13,fontWeight:700,color:'#374151'}}>${cfg.emoji} ${cfg.label}</span>
-        <span style=${{fontSize:12,fontWeight:600,color:over?'#ef4444':cfg.color}}>${value}g <span style=${{color:'#9ca3af',fontWeight:400}}>/ ${goal}g</span></span>
+    <div style=${{background:cfg.light,borderRadius:14,padding:'11px 14px'}}>
+      <div style=${{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
+        <span style=${{fontSize:13,fontWeight:700,color:'var(--text2)'}}>${cfg.emoji} ${cfg.label}</span>
+        <span style=${{fontSize:12,fontWeight:600,color:over?'var(--red)':cfg.color}}>${value}g <span style=${{color:'var(--text3)',fontWeight:400}}>/ ${goal}g</span></span>
       </div>
       <div style=${{height:8,background:'rgba(0,0,0,.07)',borderRadius:99,overflow:'hidden'}}>
-        <div className="bar-fill" style=${{height:'100%',width:pct+'%',background:over?'#f87171':cfg.color,borderRadius:99}}></div>
+        <div className="bar-fill" style=${{height:'100%',width:pct+'%',background:over?'var(--red)':cfg.color,borderRadius:99}}></div>
       </div>
-      <div style=${{fontSize:11,color:over?'#ef4444':'#9ca3af',marginTop:5,textAlign:'right'}}>
-        ${over ? `${value-goal}g over` : `${goal-value}g remaining`}
+      <p style=${{fontSize:11,color:over?'var(--red)':'var(--text3)',marginTop:4,textAlign:'right'}}>
+        ${over?`${value-goal}g over`:`${goal-value}g to go`}
+      </p>
+    </div>`;
+}
+
+function MealCard({meal,onDelete,onEdit}){
+  const [confirmDel,setConfirmDel]=useState(false);
+  return html`
+    <div className="card" style=${{padding:'13px 15px',marginBottom:8}}>
+      <!-- Row 1: badge + time + source -->
+      <div style=${{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:6}}>
+        <div style=${{display:'flex',alignItems:'center',gap:6,flexWrap:'wrap'}}>
+          <${TypeBadge} type=${meal.mealType} />
+          <span style=${{fontSize:11,color:'var(--text3)'}}>${meal.time}</span>
+          ${meal.source==='ai'?html`<span style=${{fontSize:10,color:'#a78bfa',fontWeight:600}}>✨ AI</span>`:null}
+          ${meal.source==='plan'?html`<span style=${{fontSize:10,color:'var(--primary)',fontWeight:600}}>📋 Plan</span>`:null}
+        </div>
+        <div style=${{display:'flex',gap:2}}>
+          <button className="icon-btn" onClick=${()=>onEdit(meal)} title="Edit">✏️</button>
+          ${confirmDel
+            ? html`<div style=${{display:'flex',gap:4,alignItems:'center'}}>
+                <button className="btn btn-g" style=${{padding:'4px 8px',fontSize:12}} onClick=${()=>setConfirmDel(false)}>Cancel</button>
+                <button className="btn btn-r" style=${{padding:'4px 8px',fontSize:12}} onClick=${onDelete}>Delete</button>
+              </div>`
+            : html`<button className="icon-btn danger" onClick=${()=>setConfirmDel(true)} title="Delete">🗑️</button>`}
+        </div>
+      </div>
+      <!-- Row 2: name + calories -->
+      <div style=${{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+        <p style=${{fontSize:15,fontWeight:700,color:'var(--text1)',flex:1,minWidth:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>${meal.name}</p>
+        <p style=${{fontSize:18,fontWeight:800,color:'var(--accent)',marginLeft:10,flexShrink:0}}>${meal.calories} <span style=${{fontSize:11,fontWeight:500,color:'var(--text3)'}}>kcal</span></p>
+      </div>
+      <!-- Row 3: macros -->
+      <div style=${{display:'flex',gap:14,paddingTop:8,borderTop:'1px solid var(--bg)'}}>
+        <div><p style=${{fontSize:11,color:'var(--text3)',margin:'0 0 1px'}}>💪 Protein</p><p style=${{fontSize:13,fontWeight:700,color:'#3b82f6',margin:0}}>${meal.protein}g</p></div>
+        <div><p style=${{fontSize:11,color:'var(--text3)',margin:'0 0 1px'}}>🌾 Carbs</p><p style=${{fontSize:13,fontWeight:700,color:'#f97316',margin:0}}>${meal.carbs}g</p></div>
+        <div><p style=${{fontSize:11,color:'var(--text3)',margin:'0 0 1px'}}>🥑 Fat</p><p style=${{fontSize:13,fontWeight:700,color:'#eab308',margin:0}}>${meal.fat}g</p></div>
+        ${meal.notes?html`<p style=${{fontSize:11,color:'var(--text3)',fontStyle:'italic',marginLeft:'auto',alignSelf:'flex-end',maxWidth:120,textAlign:'right',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>${meal.notes}</p>`:null}
       </div>
     </div>`;
 }
 
-function MealCard({ meal, onDelete }) {
-  const [confirmDel, setConfirmDel] = useState(false);
+function EditMealModal({meal,onSave,onClose}){
+  const [d,setD]=useState({...meal});
+  const update=k=>e=>setD(p=>({...p,[k]:k==='name'||k==='mealType'?e.target.value:parseInt(e.target.value)||0}));
   return html`
-    <div className="card" style=${{padding:'14px 16px',marginBottom:10,position:'relative'}}>
-      <div style=${{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
-        <div style=${{flex:1,minWidth:0}}>
-          <div style=${{display:'flex',alignItems:'center',gap:6,marginBottom:6,flexWrap:'wrap'}}>
-            <${TypeBadge} type=${meal.mealType} />
-            <span style=${{fontSize:11,color:'#9ca3af'}}>${meal.time}</span>
-            ${meal.source==='ai'  ? html`<span style=${{fontSize:11,color:'#a78bfa'}}>✨ AI</span>` : null}
-            ${meal.source==='off' ? html`<span style=${{fontSize:11,color:'#60a5fa'}}>📦 OFF</span>` : null}
-          </div>
-          <p style=${{fontSize:15,fontWeight:700,color:'#111827',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>${meal.name}</p>
-          ${meal.notes ? html`<p style=${{fontSize:11,color:'#9ca3af',marginTop:2,fontStyle:'italic'}}>${meal.notes}</p>` : null}
+    <div className="sheet-backdrop" onClick=${e=>e.target===e.currentTarget&&onClose()}>
+      <div className="sheet">
+        <div className="drag-handle"></div>
+        <h2 style=${{fontSize:18,fontWeight:800,color:'var(--text1)',marginBottom:16}}>✏️ Edit Meal</h2>
+        <div style=${{marginBottom:12}}>
+          <label style=${{fontSize:12,fontWeight:700,color:'var(--text2)',display:'block',marginBottom:5}}>Meal name</label>
+          <input type="text" value=${d.name} onInput=${update('name')} />
         </div>
-        <div style=${{textAlign:'right',marginLeft:12,flexShrink:0}}>
-          <p style=${{fontSize:18,fontWeight:800,color:'#111827',letterSpacing:'-0.5px'}}>${meal.calories}</p>
-          <p style=${{fontSize:11,color:'#9ca3af'}}>kcal</p>
+        <div style=${{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:6,marginBottom:14}}>
+          ${MEAL_TYPES.map(t=>{ const m=MEAL_META[t]; return html`
+            <button key=${t} onClick=${()=>setD(p=>({...p,mealType:t}))} className="btn" style=${{
+              padding:'8px 4px',border:'2px solid',borderColor:d.mealType===t?m.fg:'var(--border)',
+              background:d.mealType===t?m.bg:'var(--surface)',color:d.mealType===t?m.fg:'var(--text2)',fontSize:11,
+            }}>${m.emoji} ${t}</button>`; })}
         </div>
-      </div>
-
-      <div style=${{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:10,paddingTop:10,borderTop:'1px solid #f8fafc'}}>
-        <div style=${{display:'flex',gap:14}}>
-          <div><p style=${{fontSize:11,color:'#9ca3af',margin:'0 0 1px'}}>💪 Protein</p><p style=${{fontSize:13,fontWeight:700,color:'#3b82f6',margin:0}}>${meal.protein}g</p></div>
-          <div><p style=${{fontSize:11,color:'#9ca3af',margin:'0 0 1px'}}>🌾 Carbs</p><p style=${{fontSize:13,fontWeight:700,color:'#f97316',margin:0}}>${meal.carbs}g</p></div>
-          <div><p style=${{fontSize:11,color:'#9ca3af',margin:'0 0 1px'}}>🥑 Fat</p><p style=${{fontSize:13,fontWeight:700,color:'#eab308',margin:0}}>${meal.fat}g</p></div>
+        <div style=${{display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:10,marginBottom:16}}>
+          ${[['calories','🔥 Calories (kcal)'],['protein','💪 Protein (g)'],['carbs','🌾 Carbs (g)'],['fat','🥑 Fat (g)']].map(([k,l])=>html`
+            <div key=${k}>
+              <label style=${{fontSize:12,fontWeight:700,color:'var(--text2)',display:'block',marginBottom:4}}>${l}</label>
+              <input type="number" value=${d[k]} onInput=${update(k)} />
+            </div>`)}
         </div>
-        ${confirmDel
-          ? html`<div style=${{display:'flex',gap:6}}>
-              <button onClick=${()=>setConfirmDel(false)} style=${{fontSize:12,padding:'5px 10px',border:'1px solid #e5e7eb',borderRadius:8,background:'#fff',cursor:'pointer',color:'#6b7280'}}>Cancel</button>
-              <button onClick=${onDelete} style=${{fontSize:12,padding:'5px 10px',border:'none',borderRadius:8,background:'#ef4444',cursor:'pointer',color:'#fff',fontWeight:600}}>Delete</button>
-            </div>`
-          : html`<button onClick=${()=>setConfirmDel(true)} style=${{fontSize:18,background:'none',border:'none',cursor:'pointer',color:'#e5e7eb',lineHeight:1,padding:'2px 4px'}}
-              onMouseEnter=${e=>e.target.style.color='#ef4444'}
-              onMouseLeave=${e=>e.target.style.color='#e5e7eb'}>🗑️</button>`}
+        <div style=${{display:'flex',gap:10}}>
+          <button className="btn btn-g" style=${{flex:1}} onClick=${onClose}>Cancel</button>
+          <button className="btn btn-p" style=${{flex:2}} onClick=${()=>onSave(d)}>💾 Save changes</button>
+        </div>
       </div>
     </div>`;
 }
 
 // ── ServingPicker ─────────────────────────────────────────────────────────────
-function ServingPicker({ food, onLog, onClose }) {
-  const [grams, setGrams] = useState(food.sv[0]?.g || 100);
-  const [mealType, setMealType] = useState('Breakfast');
-  const nut = calcNut(food, grams);
+function ServingPicker({food,onLog,onClose}){
+  const [g,setG]=useState(food.sv[0]?.g||100), [mealType,setM]=useState('Breakfast');
+  const nut=calcNut(food,g);
   return html`
-    <div style=${{borderTop:'1px solid #f1f5f9',padding:'14px 16px'}}>
-      <p style=${{fontSize:12,fontWeight:700,color:'#6b7280',marginBottom:8,textTransform:'uppercase',letterSpacing:'0.5px'}}>Serving size</p>
+    <div style=${{borderTop:'1px solid var(--bg)',padding:'13px 15px'}}>
+      <p style=${{fontSize:11,fontWeight:700,color:'var(--text3)',marginBottom:8,textTransform:'uppercase',letterSpacing:'0.5px'}}>Serving size</p>
       <div style=${{display:'flex',flexWrap:'wrap',gap:6,marginBottom:12}}>
         ${food.sv.map(s=>html`
-          <button key=${s.l} onClick=${()=>setGrams(s.g)} style=${{
-            fontSize:12,padding:'6px 12px',borderRadius:99,border:'2px solid',cursor:'pointer',transition:'all .15s',
-            borderColor:grams===s.g?'#16a34a':'#e5e7eb',
-            background:grams===s.g?'#16a34a':'#fff',
-            color:grams===s.g?'#fff':'#374151',fontWeight:600,
+          <button key=${s.l} onClick=${()=>setG(s.g)} className="btn" style=${{
+            fontSize:12,padding:'5px 12px',borderRadius:99,border:'2px solid',
+            borderColor:g===s.g?'var(--primary)':'var(--border)',
+            background:g===s.g?'var(--primary)':'var(--surface)',color:g===s.g?'#fff':'var(--text2)',
           }}>${s.l}</button>`)}
-        <div style=${{display:'flex',alignItems:'center',gap:4,border:'2px solid #e5e7eb',borderRadius:99,padding:'4px 10px'}}>
-          <input type="number" value=${grams}
-            onInput=${e=>setGrams(Math.max(1,parseInt(e.target.value)||1))}
-            style=${{width:46,fontSize:12,border:'none',textAlign:'center',background:'transparent',fontWeight:600,color:'#374151',outline:'none'}}
-          />
-          <span style=${{fontSize:12,color:'#9ca3af'}}>g</span>
+        <div style=${{display:'flex',alignItems:'center',gap:4,border:'2px solid var(--border)',borderRadius:99,padding:'4px 10px',background:'var(--surface)'}}>
+          <input type="number" value=${g} onInput=${e=>setG(Math.max(1,parseInt(e.target.value)||1))}
+            style=${{width:44,fontSize:12,border:'none',textAlign:'center',background:'transparent',outline:'none',fontWeight:600}} />
+          <span style=${{fontSize:12,color:'var(--text3)'}}>g</span>
         </div>
       </div>
-
-      <div style=${{background:'linear-gradient(135deg,#f0fdf4,#f0fdf9)',borderRadius:14,padding:'12px 14px',marginBottom:12,display:'grid',gridTemplateColumns:'repeat(4,1fr)',textAlign:'center',gap:8}}>
-        ${[['🔥 Cal',nut.calories,'#111827'],['💪',nut.protein+'g','#3b82f6'],['🌾',nut.carbs+'g','#f97316'],['🥑',nut.fat+'g','#eab308']].map(([l,v,c])=>html`
-          <div key=${l}>
-            <p style=${{fontSize:11,color:'#9ca3af',margin:'0 0 3px'}}>${l}</p>
-            <p style=${{fontSize:15,fontWeight:800,color:c,margin:0}}>${v}</p>
-          </div>`)}
+      <div style=${{background:'var(--bg)',borderRadius:12,padding:'10px 14px',marginBottom:12,display:'grid',gridTemplateColumns:'repeat(4,1fr)',textAlign:'center',gap:6}}>
+        ${[['🔥',nut.calories,'var(--accent)'],['💪',nut.protein+'g','#3b82f6'],['🌾',nut.carbs+'g','#f97316'],['🥑',nut.fat+'g','#eab308']].map(([l,v,c])=>html`
+          <div key=${l}><p style=${{fontSize:11,color:'var(--text3)',margin:'0 0 2px'}}>${l}</p><p style=${{fontSize:15,fontWeight:800,color:c,margin:0}}>${v}</p></div>`)}
       </div>
-
       <div style=${{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:6,marginBottom:12}}>
-        ${MEAL_TYPES.map(t=>{ const m=MEAL_META[t]; return html`
-          <button key=${t} onClick=${()=>setMealType(t)} style=${{
-            fontSize:12,padding:'8px 4px',borderRadius:10,border:'2px solid',cursor:'pointer',transition:'all .15s',
-            borderColor:mealType===t?m.fg:'#e5e7eb',
-            background:mealType===t?m.bg:'#fff',
-            color:mealType===t?m.fg:'#374151',fontWeight:600,
-          }}>${m.emoji} ${t}</button>`; })}
+        ${MEAL_TYPES.map(t=>{const m=MEAL_META[t];return html`
+          <button key=${t} onClick=${()=>setM(t)} className="btn" style=${{
+            fontSize:11,padding:'7px 2px',border:'2px solid',borderColor:mealType===t?m.fg:'var(--border)',
+            background:mealType===t?m.bg:'var(--surface)',color:mealType===t?m.fg:'var(--text2)',
+          }}>${m.emoji} ${t}</button>`;})}
       </div>
-
       <div style=${{display:'flex',gap:8}}>
-        <button onClick=${onClose} className="btn-ghost" style=${{padding:'10px 14px'}}>Cancel</button>
-        <button onClick=${()=>onLog({...food,...nut,mealType,grams,source:food.source||'db'})} className="btn-primary" style=${{flex:1,padding:'10px'}}>
-          ✅ Add to Log
-        </button>
+        <button className="btn btn-g" onClick=${onClose}>Cancel</button>
+        <button className="btn btn-p" style=${{flex:1}} onClick=${()=>onLog({...food,...nut,mealType,source:food.source||'db'})}>✅ Add to Log</button>
       </div>
     </div>`;
 }
 
 // ── FoodSearch ────────────────────────────────────────────────────────────────
-function FoodSearch({ onLog }) {
-  const [query,setQuery]=useState('');
-  const [offRes,setOffRes]=useState([]);
-  const [offLoading,setOffLoading]=useState(false);
-  const [selId,setSelId]=useState(null);
-  const dq=useDebounce(query,400);
-  const builtin=useMemo(()=>dbSearch(dq),[dq]);
-
+function FoodSearch({onLog}){
+  const [q,setQ]=useState(''), [offRes,setOff]=useState([]), [loading,setLoad]=useState(false), [sel,setSel]=useState(null);
+  const dq=useDebounce(q,400), builtin=useMemo(()=>dbSearch(dq),[dq]);
   useEffect(()=>{
-    if(!dq.trim()||dq.length<2){setOffRes([]);return;}
-    setOffLoading(true);
-    searchOFF(dq).then(setOffRes).catch(()=>setOffRes([])).finally(()=>setOffLoading(false));
+    if(!dq.trim()||dq.length<2){setOff([]);return;}
+    setLoad(true); searchOFF(dq).then(setOff).catch(()=>setOff([])).finally(()=>setLoad(false));
   },[dq]);
-
   const results=[...builtin,...offRes.filter(o=>!builtin.some(b=>b.name.toLowerCase()===o.name.toLowerCase()))];
-
-  const handleLog=food=>{
-    onLog({...food,id:Date.now()+Math.random(),date:todayISO(),time:nowTime()});
-    setSelId(null); setQuery('');
-  };
-
+  const handleLog=food=>{onLog({...food,id:newId(),date:todayISO(),time:nowTime()});setSel(null);setQ('');};
   return html`
     <div style=${{padding:16}}>
-      <div style=${{position:'relative',marginBottom:16}}>
-        <span style=${{position:'absolute',left:13,top:'50%',transform:'translateY(-50%)',fontSize:16}}>🔍</span>
-        <input type="text" value=${query}
-          onInput=${e=>{setQuery(e.target.value);setSelId(null);}}
-          placeholder="Search foods (chicken, oats, apple…)"
-          style=${{paddingLeft:40,paddingRight:36}}
-        />
-        ${query?html`<button onClick=${()=>{setQuery('');setOffRes([]);}} style=${{position:'absolute',right:10,top:'50%',transform:'translateY(-50%)',background:'#f1f5f9',border:'none',borderRadius:99,width:22,height:22,cursor:'pointer',color:'#6b7280',fontSize:13,display:'flex',alignItems:'center',justifyContent:'center'}}>✕</button>`:null}
+      <div style=${{position:'relative',marginBottom:14}}>
+        <span style=${{position:'absolute',left:13,top:'50%',transform:'translateY(-50%)',fontSize:15}}>🔍</span>
+        <input type="text" value=${q} onInput=${e=>{setQ(e.target.value);setSel(null);}} placeholder="Search foods (chicken, oats, apple…)" style=${{paddingLeft:40,paddingRight:q?36:14}} />
+        ${q?html`<button onClick=${()=>{setQ('');setOff([]);}} style=${{position:'absolute',right:10,top:'50%',transform:'translateY(-50%)',background:'#f1f5f9',border:'none',borderRadius:99,width:22,height:22,cursor:'pointer',color:'var(--text3)',fontSize:13}}>✕</button>`:null}
       </div>
-
-      ${!query?html`
-        <div style=${{textAlign:'center',padding:'44px 0'}}>
-          <div style=${{fontSize:52,marginBottom:12}}>🥦🍗🍌</div>
-          <p style=${{fontSize:16,fontWeight:700,color:'#374151',margin:'0 0 4px'}}>Search 53 common foods</p>
-          <p style=${{fontSize:13,color:'#9ca3af'}}>Instant results · Packaged foods from Open Food Facts</p>
-        </div>
-      `:results.length===0&&!offLoading?html`
-        <div style=${{textAlign:'center',padding:'44px 0'}}>
-          <div style=${{fontSize:44,marginBottom:10}}>🤷</div>
-          <p style=${{fontSize:14,color:'#374151',margin:'0 0 4px'}}>No results for "${query}"</p>
-          <p style=${{fontSize:13,color:'#9ca3af'}}>Try a different term or describe your meal in Chat</p>
-        </div>
-      `:html`
-        <div>
+      ${!q?html`<div style=${{textAlign:'center',padding:'40px 0'}}>
+          <div style=${{fontSize:48,marginBottom:10}}>🥦🍗🍌</div>
+          <p style=${{fontSize:16,fontWeight:700,color:'var(--text2)',margin:'0 0 4px'}}>Search 49 common foods</p>
+          <p style=${{fontSize:13,color:'var(--text3)'}}>Instant results · Packaged foods from Open Food Facts</p>
+        </div>`
+      :results.length===0&&!loading?html`<div style=${{textAlign:'center',padding:'40px 0'}}>
+          <div style=${{fontSize:40,marginBottom:8}}>🤷</div>
+          <p style=${{fontSize:14,color:'var(--text1)',margin:'0 0 4px'}}>No results for "${q}"</p>
+          <p style=${{fontSize:13,color:'var(--text3)'}}>Try Chat to describe your meal instead</p>
+        </div>`
+      :html`<div>
           ${results.map(food=>html`
-            <div key=${food.id} className="card" style=${{marginBottom:8,overflow:'hidden',border:selId===food.id?'2px solid #16a34a':'2px solid transparent',transition:'border-color .15s'}}>
-              <button onClick=${()=>setSelId(selId===food.id?null:food.id)}
-                style=${{width:'100%',textAlign:'left',padding:'13px 16px',background:'none',border:'none',cursor:'pointer',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+            <div key=${food.id} className="card" style=${{marginBottom:8,overflow:'hidden',outline:sel===food.id?'2px solid var(--primary)':'2px solid transparent',transition:'outline .15s'}}>
+              <button onClick=${()=>setSel(sel===food.id?null:food.id)}
+                style=${{width:'100%',textAlign:'left',padding:'13px 15px',background:'none',border:'none',cursor:'pointer',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
                 <div style=${{flex:1,minWidth:0}}>
-                  <p style=${{fontSize:14,fontWeight:700,color:'#111827',margin:'0 0 3px',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>${CAT_EMOJI[food.cat]||'🍽️'} ${food.name}</p>
-                  <p style=${{fontSize:12,color:'#9ca3af',margin:0}}>${food.cat} · ${food.cal} kcal/100 g · 💪${food.p}g · 🌾${food.c}g · 🥑${food.f}g</p>
+                  <p style=${{fontSize:14,fontWeight:700,color:'var(--text1)',margin:'0 0 3px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>${CAT_EMOJI[food.cat]||'🍽️'} ${food.name}</p>
+                  <p style=${{fontSize:12,color:'var(--text3)',margin:0}}>${food.cat} · ${food.cal} kcal / 100 g</p>
                 </div>
-                <div style=${{display:'flex',alignItems:'center',gap:8,marginLeft:10,flexShrink:0}}>
-                  ${food.source==='off'
-                    ?html`<span style=${{fontSize:10,fontWeight:700,padding:'2px 7px',borderRadius:6,background:'#eff6ff',color:'#3b82f6'}}>OFF</span>`
-                    :html`<span style=${{fontSize:10,fontWeight:700,padding:'2px 7px',borderRadius:6,background:'#f0fdf4',color:'#16a34a'}}>DB</span>`}
-                  <span style=${{color:'#d1d5db',fontSize:11}}>${selId===food.id?'▲':'▼'}</span>
+                <div style=${{display:'flex',gap:6,marginLeft:10,flexShrink:0,alignItems:'center'}}>
+                  ${food.source==='off'?html`<span style=${{fontSize:10,fontWeight:700,padding:'2px 6px',borderRadius:6,background:'#eff6ff',color:'#3b82f6'}}>OFF</span>`:html`<span style=${{fontSize:10,fontWeight:700,padding:'2px 6px',borderRadius:6,background:'var(--light)',color:'var(--primary)'}}>DB</span>`}
+                  <span style=${{color:'var(--text3)',fontSize:11}}>${sel===food.id?'▲':'▼'}</span>
                 </div>
               </button>
-              ${selId===food.id?html`<${ServingPicker} food=${food} onLog=${handleLog} onClose=${()=>setSelId(null)} />`:null}
+              ${sel===food.id?html`<${ServingPicker} food=${food} onLog=${handleLog} onClose=${()=>setSel(null)} />`:null}
             </div>`)}
-          ${offLoading?html`
-            <div style=${{display:'flex',alignItems:'center',justifyContent:'center',gap:8,padding:'16px 0',color:'#9ca3af',fontSize:13}}>
-              <div className="spin" style=${{width:16,height:16,border:'2px solid #e5e7eb',borderTopColor:'#16a34a',borderRadius:99}}></div>
-              Searching food database…
-            </div>`:null}
+          ${loading?html`<div style=${{display:'flex',alignItems:'center',justifyContent:'center',gap:8,padding:'14px 0',color:'var(--text3)',fontSize:13}}>
+            <div className="spin" style=${{width:16,height:16,border:'2px solid var(--border)',borderTopColor:'var(--primary)',borderRadius:99}}></div>
+            Searching food database…
+          </div>`:null}
         </div>`}
     </div>`;
 }
 
 // ── ChatLogger ────────────────────────────────────────────────────────────────
-function ChatLogger({ apiKey, onLog }) {
-  const [msgs,setMsgs]=useState([
-    {role:'assistant',content:'Hi! 👋 Describe what you ate and I\'ll estimate the nutrition. Try: "bowl of oatmeal with blueberries and an oat milk latte" or "grilled chicken salad with avocado, medium portion."',meals:null}
-  ]);
-  const [input,setInput]=useState('');
-  const [loading,setLoad]=useState(false);
-  const [pending,setPend]=useState([]);
-  const endRef=useRef(null);
-  const inpRef=useRef(null);
+function ChatLogger({apiKey,onLog}){
+  const [msgs,setMsgs]=useState([{role:'assistant',content:'Hi! 👋 Describe what you ate and I\'ll estimate the nutrition. Try: "bowl of oatmeal with blueberries and an oat milk latte" or "grilled chicken salad, medium portion."',meals:null}]);
+  const [input,setInput]=useState(''), [loading,setLoad]=useState(false), [pending,setPend]=useState([]);
+  const endRef=useRef(null), inpRef=useRef(null);
   useEffect(()=>endRef.current?.scrollIntoView({behavior:'smooth'}),[msgs]);
-
   const history=msgs.slice(1).map(m=>({role:m.role==='assistant'?'assistant':'user',content:m.content}));
-
   const send=async()=>{
     const text=input.trim(); if(!text||loading) return;
-    setInput('');
-    setMsgs(m=>[...m,{role:'user',content:text}]);
-    setLoad(true);
-    try {
-      const r=await callClaude([...history,{role:'user',content:text}],apiKey);
+    setInput(''); setMsgs(m=>[...m,{role:'user',content:text}]); setLoad(true);
+    try{const r=await callClaude([...history,{role:'user',content:text}],apiKey);
       setMsgs(m=>[...m,{role:'assistant',content:r.message,meals:r.meals?.length?r.meals:null}]);
       if(r.meals?.length) setPend(r.meals);
-    } catch(e) {
-      setMsgs(m=>[...m,{role:'assistant',content:'⚠️ Error: '+e.message,meals:null}]);
-    } finally { setLoad(false); inpRef.current?.focus(); }
+    }catch(e){setMsgs(m=>[...m,{role:'assistant',content:'⚠️ Error: '+e.message,meals:null}]);}
+    finally{setLoad(false);inpRef.current?.focus();}
   };
-
   const logAll=()=>{
     const time=nowTime(),date=todayISO();
-    pending.forEach(m=>onLog({...m,id:Date.now()+Math.random(),date,time,source:'ai'}));
-    const n=pending.length, name=pending[0]?.name||'Meal';
-    setPend([]);
-    setMsgs(m=>[...m,{role:'assistant',content:`✅ Logged! ${n===1?name:n+' meals'} added to today. Anything else?`,meals:null}]);
+    pending.forEach(m=>onLog({...m,id:newId(),date,time,source:'ai'}));
+    const n=pending.length; setPend([]);
+    setMsgs(m=>[...m,{role:'assistant',content:`✅ Logged! ${n===1?pending[0]?.name||'Meal':n+' meals'} added. Anything else?`,meals:null}]);
   };
-
   return html`
     <div style=${{display:'flex',flexDirection:'column',height:'calc(100vh - 170px)'}}>
-      <div style=${{flex:1,overflowY:'auto',padding:16,display:'flex',flexDirection:'column',gap:12}}>
+      <div style=${{flex:1,overflowY:'auto',padding:16,display:'flex',flexDirection:'column',gap:10}}>
         ${msgs.map((msg,i)=>html`
           <div key=${i} style=${{display:'flex',justifyContent:msg.role==='user'?'flex-end':'flex-start'}}>
             <div style=${{maxWidth:'85%'}}>
               ${msg.role==='assistant'?html`
                 <div style=${{display:'flex',alignItems:'flex-start',gap:8}}>
-                  <div style=${{width:32,height:32,borderRadius:99,background:'linear-gradient(135deg,#16a34a,#065f46)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:16,flexShrink:0,marginTop:2}}>🤖</div>
+                  <div style=${{width:30,height:30,borderRadius:99,background:'linear-gradient(135deg,var(--primary),var(--deep))',display:'flex',alignItems:'center',justifyContent:'center',fontSize:15,flexShrink:0,marginTop:2}}>🤖</div>
                   <div style=${{flex:1}}>
                     <div className="ai-bubble" style=${{padding:'10px 14px',fontSize:14,lineHeight:1.55}}>${msg.content}</div>
                     ${msg.meals?.length?html`
                       <div style=${{marginTop:8}}>
                         ${msg.meals.map((m,mi)=>html`
-                          <div key=${mi} className="card" style=${{padding:'12px 14px',marginBottom:6}}>
-                            <div style=${{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
-                              <div>
-                                <${TypeBadge} type=${m.mealType} />
-                                <p style=${{fontSize:14,fontWeight:700,color:'#111827',margin:'5px 0 0'}}>${m.name}</p>
-                                ${m.notes?html`<p style=${{fontSize:11,color:'#9ca3af',fontStyle:'italic',margin:'2px 0 0'}}>${m.notes}</p>`:null}
-                              </div>
-                              <span style=${{fontSize:18,fontWeight:800,color:'#111827',marginLeft:10,flexShrink:0}}>${m.calories}<span style=${{fontSize:11,fontWeight:500,color:'#9ca3af'}}> kcal</span></span>
+                          <div key=${mi} className="card" style=${{padding:'11px 14px',marginBottom:6}}>
+                            <div style=${{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:6}}>
+                              <div><${TypeBadge} type=${m.mealType} /><p style=${{fontSize:14,fontWeight:700,color:'var(--text1)',marginTop:4}}>${m.name}</p></div>
+                              <span style=${{fontSize:17,fontWeight:800,color:'var(--accent)',marginLeft:10}}>${m.calories}<span style=${{fontSize:11,fontWeight:500,color:'var(--text3)'}}> kcal</span></span>
                             </div>
-                            <div style=${{display:'flex',gap:12,marginTop:8,fontSize:12}}>
+                            <div style=${{display:'flex',gap:12,fontSize:12}}>
                               <span style=${{color:'#3b82f6',fontWeight:700}}>💪 ${m.protein}g</span>
                               <span style=${{color:'#f97316',fontWeight:700}}>🌾 ${m.carbs}g</span>
                               <span style=${{color:'#eab308',fontWeight:700}}>🥑 ${m.fat}g</span>
                             </div>
                           </div>`)}
                         <div style=${{display:'flex',gap:8,marginTop:4}}>
-                          <button onClick=${logAll} className="btn-primary" style=${{flex:1,padding:'10px'}}>✅ Log ${pending.length>1?'all':'this'}</button>
-                          <button onClick=${()=>setPend([])} className="btn-ghost" style=${{padding:'10px 14px'}}>Edit</button>
+                          <button className="btn btn-p" style=${{flex:1}} onClick=${logAll}>✅ Log ${pending.length>1?'all':'this'}</button>
+                          <button className="btn btn-g" onClick=${()=>setPend([])}>Edit</button>
                         </div>
                       </div>`:null}
                   </div>
-                </div>
-              `:html`<div className="user-bubble" style=${{padding:'10px 14px',fontSize:14,lineHeight:1.55}}>${msg.content}</div>`}
+                </div>`
+              :html`<div className="user-bubble" style=${{padding:'10px 14px',fontSize:14,lineHeight:1.55}}>${msg.content}</div>`}
             </div>
           </div>`)}
         ${loading?html`
           <div style=${{display:'flex',alignItems:'flex-start',gap:8}}>
-            <div style=${{width:32,height:32,borderRadius:99,background:'linear-gradient(135deg,#16a34a,#065f46)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:16,flexShrink:0}}>🤖</div>
-            <div className="ai-bubble" style=${{padding:'12px 16px',display:'flex',gap:4,alignItems:'center'}}>
-              <span className="dot"></span><span className="dot"></span><span className="dot"></span>
-            </div>
+            <div style=${{width:30,height:30,borderRadius:99,background:'linear-gradient(135deg,var(--primary),var(--deep))',display:'flex',alignItems:'center',justifyContent:'center',fontSize:15,flexShrink:0}}>🤖</div>
+            <div className="ai-bubble" style=${{padding:'12px 16px',display:'flex',gap:4,alignItems:'center'}}><span className="dot"></span><span className="dot"></span><span className="dot"></span></div>
           </div>`:null}
         <div ref=${endRef}></div>
       </div>
-      <div style=${{padding:'12px 16px',borderTop:'1px solid #f1f5f9',background:'#fff'}}>
+      <div style=${{padding:'12px 16px',borderTop:'1px solid var(--border)',background:'var(--surface)'}}>
         <div style=${{display:'flex',gap:8}}>
-          <input ref=${inpRef} type="text" value=${input}
-            onInput=${e=>setInput(e.target.value)}
-            onKeyDown=${e=>e.key==='Enter'&&!e.shiftKey&&send()}
-            placeholder="Describe what you ate…"
-            style=${{flex:1}}
-          />
-          <button onClick=${send} disabled=${loading||!input.trim()} className="btn-primary"
-            style=${{opacity:loading||!input.trim()?.4:1,transition:'opacity .2s'}}>Send</button>
+          <input ref=${inpRef} type="text" value=${input} onInput=${e=>setInput(e.target.value)} onKeyDown=${e=>e.key==='Enter'&&!e.shiftKey&&send()} placeholder="Describe what you ate…" style=${{flex:1}} />
+          <button className="btn btn-p" onClick=${send} disabled=${loading||!input.trim()} style=${{opacity:loading||!input.trim()?.4:1}}>Send</button>
         </div>
+      </div>
+    </div>`;
+}
+
+// ── QuickAddRecents ───────────────────────────────────────────────────────────
+function QuickAddRecents({allMeals,onLog}){
+  const recents=useMemo(()=>{
+    const seen=new Set();
+    return [...allMeals].reverse().filter(m=>{ if(seen.has(m.name)) return false; seen.add(m.name); return true; }).slice(0,5);
+  },[allMeals]);
+  if(!recents.length) return null;
+  return html`
+    <div style=${{padding:'14px 16px 0'}}>
+      <p style=${{fontSize:13,fontWeight:700,color:'var(--text2)',marginBottom:8}}>⚡ Quick add</p>
+      <div style=${{display:'flex',gap:8,overflowX:'auto',paddingBottom:4}}>
+        ${recents.map(m=>html`
+          <div key=${m.id} className="card" style=${{flexShrink:0,padding:'10px 12px',minWidth:130,maxWidth:160}}>
+            <${TypeBadge} type=${m.mealType} />
+            <p style=${{fontSize:13,fontWeight:600,color:'var(--text1)',margin:'5px 0 2px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>${m.name}</p>
+            <p style=${{fontSize:12,color:'var(--accent)',fontWeight:700,margin:'0 0 8px'}}>${m.calories} kcal</p>
+            <button className="btn btn-p" style=${{width:'100%',padding:'6px',fontSize:12}} onClick=${()=>onLog({...m,id:newId(),date:todayISO(),time:nowTime()})}>+ Add again</button>
+          </div>`)}
       </div>
     </div>`;
 }
 
 // ── LogTab ────────────────────────────────────────────────────────────────────
-function LogTab({ apiKey, onLog }) {
+function LogTab({apiKey,onLog,allMeals}){
   const [mode,setMode]=useState(apiKey?'chat':'search');
   return html`
     <div>
-      <div style=${{margin:'14px 16px 0',background:'#e8f5e9',borderRadius:14,padding:4,display:'flex',gap:4}}>
-        ${[['chat','💬  Chat'],['search','🔍  Search']].map(([id,label])=>html`
-          <button key=${id} className="seg-btn" onClick=${()=>{if(id==='chat'&&!apiKey)return;setMode(id);}} style=${{
-            flex:1, background:mode===id?'#fff':'transparent',
-            color:mode===id?'#16a34a':id==='chat'&&!apiKey?'#d1d5db':'#6b7280',
-            boxShadow:mode===id?'0 1px 4px rgba(0,0,0,.1)':'none',
-            opacity:id==='chat'&&!apiKey?.45:1, cursor:id==='chat'&&!apiKey?'default':'pointer',
-          }}>${label}</button>`)}
+      ${mode!=='chat'?html`<${QuickAddRecents} allMeals=${allMeals} onLog=${onLog} />`:null}
+      <div style=${{padding:'14px 16px 0'}}>
+        <div className="seg">
+          ${[['chat','💬  Chat'],['search','🔍  Search']].map(([id,label])=>html`
+            <button key=${id} className=${'seg-btn'+(mode===id?' active':'')}
+              onClick=${()=>{if(id==='chat'&&!apiKey)return;setMode(id);}}
+              style=${{opacity:id==='chat'&&!apiKey?.4:1,cursor:id==='chat'&&!apiKey?'default':'pointer'}}>${label}</button>`)}
+        </div>
       </div>
-      ${!apiKey?html`
-        <div style=${{margin:'10px 16px 0',padding:'10px 14px',borderRadius:12,background:'#fffbeb',border:'1px solid #fde68a',fontSize:12,color:'#92400e',lineHeight:1.6}}>
-          💡 <strong>Enable chat logging</strong> — add an Anthropic API key in ⚙️ Settings. Free tier available at console.anthropic.com
-        </div>`:null}
+      ${!apiKey?html`<div style=${{margin:'10px 16px 0',padding:'10px 14px',borderRadius:12,background:'#fffbeb',border:'1px solid #fde68a',fontSize:12,color:'#92400e',lineHeight:1.6}}>
+        💡 <strong>Chat logging</strong> needs an Anthropic API key — add one in ⚙️ Settings. Free tier available.
+      </div>`:null}
       ${mode==='chat'&&apiKey?html`<${ChatLogger} apiKey=${apiKey} onLog=${onLog} />`:null}
       ${mode==='search'?html`<${FoodSearch} onLog=${onLog} />`:null}
     </div>`;
 }
 
-// ── TodayTab ──────────────────────────────────────────────────────────────────
-function TodayTab({ meals, goals, onDelete }) {
-  const tot=meals.reduce((a,m)=>({calories:a.calories+m.calories,protein:a.protein+m.protein,carbs:a.carbs+m.carbs,fat:a.fat+m.fat}),{calories:0,protein:0,carbs:0,fat:0});
-  const calPct=Math.min(100,rnd((tot.calories/goals.calories)*100));
-  const remaining=Math.max(0,goals.calories-tot.calories);
-  const over=tot.calories>goals.calories;
-  const C=2*Math.PI*52;
+// ── DailySummaryBar ───────────────────────────────────────────────────────────
+function DailySummaryBar({meals}){
+  if(!meals.length) return null;
+  const cal=meals.reduce((s,m)=>s+m.calories,0), pro=meals.reduce((s,m)=>s+m.protein,0);
+  return html`
+    <div style=${{background:'var(--deep)',color:'#fff',borderRadius:12,padding:'8px 14px',marginBottom:12,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+      <span style=${{fontSize:13,fontWeight:600}}>🍽️ ${meals.length} meal${meals.length!==1?'s':''}</span>
+      <span style=${{fontSize:13,fontWeight:700,color:'#bbf7d0'}}>🔥 ${cal.toLocaleString()} kcal</span>
+      <span style=${{fontSize:13,fontWeight:600}}>💪 ${pro}g protein</span>
+    </div>`;
+}
 
+// ── TodayTab ──────────────────────────────────────────────────────────────────
+function TodayTab({meals,goals,onDelete,onEdit,setTab}){
+  const tot=meals.reduce((a,m)=>({calories:a.calories+m.calories,protein:a.protein+m.protein,carbs:a.carbs+m.carbs,fat:a.fat+m.fat}),{calories:0,protein:0,carbs:0,fat:0});
+  const calPct=Math.min(100,rnd((tot.calories/goals.calories)*100)), over=tot.calories>goals.calories;
+  const remaining=Math.max(0,goals.calories-tot.calories), C=2*Math.PI*52;
   return html`
     <div style=${{padding:16}}>
-      <!-- Calorie hero card -->
-      <div style=${{background:'linear-gradient(135deg,#16a34a,#15803d)',borderRadius:22,padding:'20px 24px',marginBottom:12,display:'flex',alignItems:'center',gap:20,color:'#fff'}}>
+      <!-- Calorie hero -->
+      <div style=${{background:'linear-gradient(135deg,var(--deep),var(--primary))',borderRadius:20,padding:'18px 22px',marginBottom:12,display:'flex',alignItems:'center',gap:18,color:'#fff'}}>
         <div style=${{position:'relative',flexShrink:0}}>
-          <svg width="110" height="110" viewBox="0 0 110 110">
-            <circle cx="55" cy="55" r="52" fill="none" stroke="rgba(255,255,255,.2)" strokeWidth="9"/>
-            <circle cx="55" cy="55" r="52" fill="none"
-              stroke=${over?'#fca5a5':'#bbf7d0'} strokeWidth="9"
-              strokeDasharray=${`${(calPct/100*C).toFixed(1)} ${C}`}
-              strokeDashoffset=${C/4}
-              strokeLinecap="round"/>
+          <svg width="100" height="100" viewBox="0 0 110 110">
+            <circle cx="55" cy="55" r="52" fill="none" stroke="rgba(255,255,255,.15)" strokeWidth="9"/>
+            <circle cx="55" cy="55" r="52" fill="none" stroke=${over?'#fca5a5':'#bbf7d0'} strokeWidth="9"
+              strokeDasharray=${`${(calPct/100*C).toFixed(1)} ${C}`} strokeDashoffset=${C/4} strokeLinecap="round"/>
           </svg>
           <div style=${{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'}}>
+            <span style=${{fontSize:22}}>🔥</span>
             <span style=${{fontSize:10,color:'rgba(255,255,255,.7)',fontWeight:600}}>${calPct}%</span>
-            <span style=${{fontSize:22,fontWeight:900,lineHeight:1}}>🔥</span>
           </div>
         </div>
         <div style=${{flex:1}}>
-          <p style=${{fontSize:12,color:'rgba(255,255,255,.75)',fontWeight:600,marginBottom:2}}>CALORIES TODAY</p>
-          <p style=${{fontSize:38,fontWeight:900,letterSpacing:'-1.5px',lineHeight:1,marginBottom:4}}>${tot.calories.toLocaleString()}</p>
-          <p style=${{fontSize:13,color:'rgba(255,255,255,.85)'}}>${over?`⚠️ ${(tot.calories-goals.calories).toLocaleString()} kcal over goal`:`${remaining.toLocaleString()} kcal remaining`}</p>
-          <p style=${{fontSize:11,color:'rgba(255,255,255,.55)',marginTop:4}}>Goal: ${goals.calories.toLocaleString()} kcal</p>
+          <p style=${{fontSize:11,color:'rgba(255,255,255,.65)',fontWeight:700,letterSpacing:'1px',margin:'0 0 2px'}}>CALORIES TODAY</p>
+          <p style=${{fontSize:36,fontWeight:900,letterSpacing:'-1.5px',lineHeight:1,margin:'0 0 4px',color:'#fff'}}>${tot.calories.toLocaleString()}</p>
+          <p style=${{fontSize:13,color:'rgba(255,255,255,.8)'}}>
+            ${over?`⚠️ ${(tot.calories-goals.calories).toLocaleString()} over goal`:`${remaining.toLocaleString()} remaining`}
+          </p>
+          <p style=${{fontSize:11,color:'rgba(255,255,255,.45)',marginTop:3}}>Goal: ${goals.calories.toLocaleString()} kcal</p>
         </div>
       </div>
-
-      <!-- Macro cards -->
+      <!-- Macro bars -->
       <div style=${{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8,marginBottom:16}}>
         ${MACRO_CFG.map(cfg=>html`<${MacroBar} key=${cfg.key} cfg=${cfg} value=${tot[cfg.key]} goal=${goals[cfg.key]} />`)}
       </div>
-
       <!-- Meal list -->
       <div style=${{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
-        <p style=${{fontSize:16,fontWeight:800,color:'#111827'}}>🍽️ Meals logged</p>
-        <span style=${{fontSize:13,color:'#9ca3af'}}>${meals.length} item${meals.length!==1?'s':''}</span>
+        <p style=${{fontSize:16,fontWeight:800,color:'var(--text1)'}}>Today's meals</p>
+        <span style=${{fontSize:12,color:'var(--text3)'}}>${meals.length} item${meals.length!==1?'s':''}</span>
       </div>
       ${meals.length===0?html`
-        <div style=${{textAlign:'center',padding:'48px 0'}}>
-          <div style=${{fontSize:52,marginBottom:10}}>🍽️</div>
-          <p style=${{fontSize:16,fontWeight:700,color:'#374151',marginBottom:4}}>Nothing logged yet</p>
-          <p style=${{fontSize:13,color:'#9ca3af'}}>Use the Log tab to add meals</p>
+        <div className="card" style=${{textAlign:'center',padding:'44px 20px'}}>
+          <div style=${{fontSize:56,marginBottom:12}}>🍽️</div>
+          <p style=${{fontSize:17,fontWeight:800,color:'var(--text1)',margin:'0 0 5px'}}>Nothing logged yet</p>
+          <p style=${{fontSize:13,color:'var(--text3)',margin:'0 0 20px'}}>Tap the button below to log your first meal today</p>
+          <button className="btn btn-p" style=${{padding:'13px 28px',fontSize:15}} onClick=${()=>setTab('log')}>+ Log a meal</button>
         </div>`
-      :html`<div>${[...meals].reverse().map(m=>html`<${MealCard} key=${m.id} meal=${m} onDelete=${()=>onDelete(m.id)} />`)}</div>`}
+      :html`<div>${[...meals].reverse().map(m=>html`<${MealCard} key=${m.id} meal=${m} onDelete=${()=>onDelete(m.id)} onEdit=${onEdit} />`)}</div>`}
+    </div>`;
+}
+
+// ── Grocery Prompt Modal ──────────────────────────────────────────────────────
+function GroceryPromptModal({plan,onConfirm,onClose}){
+  return html`
+    <div className="sheet-backdrop" onClick=${e=>e.target===e.currentTarget&&onClose()}>
+      <div className="sheet">
+        <div className="drag-handle"></div>
+        <p style=${{fontSize:22,textAlign:'center',marginBottom:8}}>📋</p>
+        <h2 style=${{fontSize:18,fontWeight:800,color:'var(--text1)',marginBottom:4,textAlign:'center'}}>Apply "${plan.name}"</h2>
+        <p style=${{fontSize:13,color:'var(--text3)',textAlign:'center',marginBottom:20}}>${plan.meals.length} meal${plan.meals.length!==1?'s':''} will be added to today's log</p>
+        <div className="card" style=${{padding:'10px 14px',marginBottom:20}}>
+          ${plan.meals.map((m,i)=>html`
+            <div key=${i} style=${{display:'flex',justifyContent:'space-between',padding:'6px 0',borderBottom:i<plan.meals.length-1?'1px solid var(--bg)':'none'}}>
+              <span style=${{fontSize:13,color:'var(--text1)',fontWeight:600}}>${MEAL_META[m.mealType]?.emoji||'🍽️'} ${m.name}</span>
+              <span style=${{fontSize:13,color:'var(--accent)',fontWeight:700}}>${m.calories} kcal</span>
+            </div>`)}
+        </div>
+        <div style=${{display:'flex',flexDirection:'column',gap:8}}>
+          <button className="btn btn-p" style=${{padding:'13px'}} onClick=${()=>onConfirm(true)}>🛒 Log meals + add to grocery list</button>
+          <button className="btn btn-g" style=${{padding:'13px'}} onClick=${()=>onConfirm(false)}>✅ Log meals only</button>
+          <button className="btn" style=${{padding:'10px',color:'var(--text3)',background:'none',border:'none',fontSize:13}} onClick=${onClose}>Cancel</button>
+        </div>
+      </div>
     </div>`;
 }
 
 // ── WeekTab ───────────────────────────────────────────────────────────────────
-const DAY_EMOJI = ['🌙','🌟','🌤️','🌈','⚡','🎉','😴'];
-function WeekTab({ allMeals }) {
+const DAY_EMOJI=['🌙','🌟','🌤️','🌈','⚡','🎉','😴'];
+function WeekTab({allMeals,plans,onSavePlan,onDeletePlan,onUsePlan}){
   const today=new Date(), dow=today.getDay();
   const monday=new Date(today); monday.setDate(today.getDate()-(dow===0?6:dow-1));
-  const weekDates=DAYS.map((_,i)=>{ const d=new Date(monday); d.setDate(monday.getDate()+i); return d.toISOString().slice(0,10); });
+  const weekDates=DAYS.map((_,i)=>{const d=new Date(monday);d.setDate(monday.getDate()+i);return d.toISOString().slice(0,10);});
   const ts=todayISO();
+  const [savingDate,setSavingDate]=useState(null), [planName,setPlanName]=useState('');
+  const doSave=()=>{
+    if(!planName.trim()) return;
+    const dayMeals=allMeals.filter(m=>m.date===savingDate).map(({name,mealType,calories,protein,carbs,fat,notes})=>({name,mealType,calories,protein,carbs,fat,notes}));
+    onSavePlan(planName.trim(),dayMeals);
+    setSavingDate(null); setPlanName('');
+  };
   return html`
     <div style=${{padding:16}}>
-      <p style=${{fontSize:16,fontWeight:800,color:'#111827',marginBottom:12}}>📅 This Week</p>
+      <p style=${{fontSize:16,fontWeight:800,color:'var(--text1)',marginBottom:12}}>📅 This Week</p>
       ${DAYS.map((dayName,i)=>{
         const date=weekDates[i], dayMeals=allMeals.filter(m=>m.date===date);
         const totalCal=dayMeals.reduce((s,m)=>s+m.calories,0), isToday=date===ts;
         return html`
-          <div key=${dayName} className="card" style=${{marginBottom:8,padding:'13px 16px',border:isToday?'2px solid #16a34a':'2px solid transparent'}}>
-            <div style=${{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:dayMeals.length?6:0}}>
-              <div style=${{display:'flex',alignItems:'center',gap:8}}>
-                <span style=${{fontSize:18}}>${DAY_EMOJI[i]}</span>
-                <span style=${{fontSize:14,fontWeight:700,color:isToday?'#16a34a':'#374151'}}>${dayName}</span>
-                ${isToday?html`<span style=${{fontSize:11,fontWeight:700,padding:'2px 8px',borderRadius:99,background:'#dcfce7',color:'#15803d'}}>Today</span>`:null}
+          <div key=${dayName} className="card" style=${{marginBottom:8,overflow:'hidden',outline:isToday?'2px solid var(--primary)':'2px solid transparent'}}>
+            <div style=${{padding:'12px 14px'}}>
+              <!-- Day header -->
+              <div style=${{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:dayMeals.length?8:0}}>
+                <div style=${{display:'flex',alignItems:'center',gap:8}}>
+                  <span style=${{fontSize:18}}>${DAY_EMOJI[i]}</span>
+                  <span style=${{fontSize:14,fontWeight:800,color:isToday?'var(--primary)':'var(--text1)'}}>${dayName}</span>
+                  ${isToday?html`<span className="badge" style=${{background:'var(--light)',color:'var(--primary)'}}>Today</span>`:null}
+                </div>
+                <div style=${{display:'flex',alignItems:'center',gap:8}}>
+                  ${dayMeals.length?html`<span style=${{fontSize:14,fontWeight:800,color:'var(--accent)'}}>${totalCal.toLocaleString()} kcal</span>`:html`<span style=${{fontSize:13,color:'var(--border)'}}>—</span>`}
+                  ${dayMeals.length?html`<button className="icon-btn" onClick=${()=>{setSavingDate(date);setPlanName(dayName+' plan');}} title="Save as plan" style=${{fontSize:14}}>💾</button>`:null}
+                </div>
               </div>
-              ${dayMeals.length
-                ?html`<span style=${{fontSize:14,fontWeight:800,color:'#16a34a'}}>${totalCal.toLocaleString()} kcal</span>`
-                :html`<span style=${{fontSize:13,color:'#e2e8f0'}}>—</span>`}
-            </div>
-            ${dayMeals.length?html`
-              <div style=${{display:'flex',flexDirection:'column',gap:3}}>
-                ${MEAL_TYPES.map(type=>{
-                  const tm=dayMeals.filter(m=>m.mealType===type);
-                  if(!tm.length) return null;
-                  const meta=MEAL_META[type];
-                  return html`
-                    <div key=${type} style=${{display:'flex',gap:8,fontSize:12,alignItems:'baseline'}}>
-                      <span style=${{color:meta.fg,width:70,flexShrink:0,fontWeight:600}}>${meta.emoji} ${type}</span>
-                      <span style=${{color:'#6b7280',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>${tm.map(m=>m.name).join(', ')}</span>
+              <!-- Meals -->
+              ${dayMeals.length?html`
+                <div style=${{display:'flex',flexDirection:'column',gap:3}}>
+                  ${MEAL_TYPES.map(type=>{
+                    const tm=dayMeals.filter(m=>m.mealType===type); if(!tm.length) return null;
+                    const meta=MEAL_META[type];
+                    return html`<div key=${type} style=${{display:'flex',gap:8,fontSize:12,alignItems:'baseline'}}>
+                      <span style=${{color:meta.fg,width:72,flexShrink:0,fontWeight:700}}>${meta.emoji} ${type}</span>
+                      <span style=${{color:'var(--text2)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>${tm.map(m=>m.name).join(', ')}</span>
                     </div>`;
-                })}
-              </div>`
-            :html`<p style=${{fontSize:12,color:'#e2e8f0'}}>No meals logged</p>`}
+                  })}
+                </div>`
+              :html`<p style=${{fontSize:12,color:'var(--border)'}}>No meals logged</p>`}
+            </div>
+            <!-- Inline save plan input -->
+            ${savingDate===date?html`
+              <div style=${{padding:'10px 14px',borderTop:'1px solid var(--bg)',background:'var(--bg)',display:'flex',gap:8}}>
+                <input type="text" value=${planName} onInput=${e=>setPlanName(e.target.value)} onKeyDown=${e=>e.key==='Enter'&&doSave()} placeholder="Name this plan…" style=${{flex:1,padding:'8px 12px',fontSize:13}} />
+                <button className="btn btn-p" style=${{padding:'8px 14px',fontSize:13}} onClick=${doSave}>Save</button>
+                <button className="btn btn-g" style=${{padding:'8px 12px',fontSize:13}} onClick=${()=>setSavingDate(null)}>✕</button>
+              </div>`:null}
           </div>`;
       })}
+
+      <!-- Saved Plans -->
+      <div style=${{marginTop:20}}>
+        <p style=${{fontSize:16,fontWeight:800,color:'var(--text1)',marginBottom:10}}>📋 Saved Plans</p>
+        ${plans.length===0?html`
+          <div className="card" style=${{padding:'24px',textAlign:'center'}}>
+            <p style=${{fontSize:32,marginBottom:8}}>📋</p>
+            <p style=${{fontSize:14,fontWeight:600,color:'var(--text2)',margin:'0 0 4px'}}>No saved plans yet</p>
+            <p style=${{fontSize:13,color:'var(--text3)'}}>Tap 💾 on any day with meals to save it as a reusable plan</p>
+          </div>`
+        :html`<div>
+          ${plans.map(plan=>html`
+            <div key=${plan.id} className="card" style=${{padding:'13px 15px',marginBottom:8}}>
+              <div style=${{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:8}}>
+                <div>
+                  <p style=${{fontSize:15,fontWeight:800,color:'var(--text1)',margin:'0 0 3px'}}>${plan.name}</p>
+                  <p style=${{fontSize:12,color:'var(--text3)'}}>${plan.meals.length} meals · saved ${plan.createdAt}</p>
+                </div>
+                <button className="icon-btn danger" onClick=${()=>onDeletePlan(plan.id)}>🗑️</button>
+              </div>
+              <div style=${{display:'flex',flexWrap:'wrap',gap:4,marginBottom:10}}>
+                ${plan.meals.map((m,i)=>html`<span key=${i} style=${{fontSize:12,padding:'2px 8px',borderRadius:99,background:'var(--bg)',color:'var(--text2)',fontWeight:500}}>${m.name}</span>`)}
+              </div>
+              <button className="btn btn-p" style=${{width:'100%',padding:'10px'}} onClick=${()=>onUsePlan(plan)}>▶ Use this plan</button>
+            </div>`)}
+        </div>`}
+      </div>
+    </div>`;
+}
+
+// ── GroceryTab ────────────────────────────────────────────────────────────────
+function GroceryTab({items,onAdd,onToggle,onDelete,onClearChecked}){
+  const [text,setText]=useState('');
+  const add=()=>{ if(!text.trim()) return; onAdd(text.trim()); setText(''); };
+  const checked=items.filter(i=>i.checked), unchecked=items.filter(i=>!i.checked);
+  return html`
+    <div style=${{padding:16}}>
+      <div style=${{display:'flex',gap:8,marginBottom:16}}>
+        <input type="text" value=${text} onInput=${e=>setText(e.target.value)} onKeyDown=${e=>e.key==='Enter'&&add()} placeholder="Add item (e.g. oats, chicken breast)…" style=${{flex:1}} />
+        <button className="btn btn-p" onClick=${add} disabled=${!text.trim()} style=${{padding:'10px 16px',opacity:!text.trim()?.4:1}}>Add</button>
+      </div>
+
+      ${items.length===0?html`
+        <div className="card" style=${{padding:'44px 20px',textAlign:'center'}}>
+          <div style=${{fontSize:52,marginBottom:12}}>🛒</div>
+          <p style=${{fontSize:17,fontWeight:800,color:'var(--text1)',margin:'0 0 5px'}}>Your grocery list is empty</p>
+          <p style=${{fontSize:13,color:'var(--text3)'}}>Add items above, or apply a meal plan to populate it automatically</p>
+        </div>`
+      :html`<div>
+        ${unchecked.length?html`
+          <p style=${{fontSize:12,fontWeight:700,color:'var(--text3)',marginBottom:8,textTransform:'uppercase',letterSpacing:'0.5px'}}>To buy (${unchecked.length})</p>
+          ${unchecked.map(item=>html`
+            <div key=${item.id} className="card" style=${{display:'flex',alignItems:'center',gap:12,padding:'12px 14px',marginBottom:6}}>
+              <button onClick=${()=>onToggle(item.id)} style=${{width:22,height:22,borderRadius:6,border:'2px solid var(--border)',background:'var(--surface)',cursor:'pointer',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center'}}></button>
+              <div style=${{flex:1,minWidth:0}}>
+                <p style=${{fontSize:14,fontWeight:600,color:'var(--text1)',margin:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>${item.text}</p>
+                ${item.source?html`<p style=${{fontSize:11,color:'var(--text3)',margin:0}}>${item.source}</p>`:null}
+              </div>
+              <button className="icon-btn danger" onClick=${()=>onDelete(item.id)}>🗑️</button>
+            </div>`)}`
+        :null}
+        ${checked.length?html`
+          <div style=${{display:'flex',justifyContent:'space-between',alignItems:'center',margin:'16px 0 8px'}}>
+            <p style=${{fontSize:12,fontWeight:700,color:'var(--text3)',textTransform:'uppercase',letterSpacing:'0.5px'}}>Done (${checked.length})</p>
+            <button className="btn btn-g" style=${{padding:'5px 12px',fontSize:12}} onClick=${onClearChecked}>Clear all</button>
+          </div>
+          ${checked.map(item=>html`
+            <div key=${item.id} className="card" style=${{display:'flex',alignItems:'center',gap:12,padding:'12px 14px',marginBottom:6,opacity:.55}}>
+              <button onClick=${()=>onToggle(item.id)} style=${{width:22,height:22,borderRadius:6,border:'2px solid var(--primary)',background:'var(--primary)',cursor:'pointer',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:13}}>✓</button>
+              <p style=${{fontSize:14,color:'var(--text3)',margin:0,textDecoration:'line-through',flex:1}}>${item.text}</p>
+              <button className="icon-btn danger" onClick=${()=>onDelete(item.id)}>🗑️</button>
+            </div>`)}`
+        :null}
+      </div>`}
     </div>`;
 }
 
 // ── Settings ──────────────────────────────────────────────────────────────────
-const ACTIVITY_OPTS = [
-  {id:'sedentary',  label:'🛋️ Sedentary', sub:'Little or no exercise'},
-  {id:'light',      label:'🚶 Light',      sub:'1–3 days/week'},
-  {id:'moderate',   label:'🏃 Moderate',   sub:'3–5 days/week'},
-  {id:'active',     label:'💪 Active',     sub:'6–7 days/week'},
-  {id:'veryactive', label:'🏋️ Very Active', sub:'Hard daily training'},
-];
-const GOAL_OPTS = [
-  {id:'lose',     label:'📉 Lose Weight',  sub:'−500 kcal/day'},
-  {id:'maintain', label:'⚖️ Maintain',     sub:'Eat at TDEE'},
-  {id:'gain',     label:'📈 Gain Muscle',  sub:'+300 kcal/day'},
-];
-
-function Settings({ onClose, apiKey, setApiKey, goals, setGoals }) {
-  const [key,setKey]=useState(apiKey);
-  const [g,setG]=useState(goals);
-  const [calc,setCalc]=useState({ sex:'male', age:30, weight:75, height:175, activity:'moderate', goal:'maintain' });
-  const [calcResult,setCalcResult]=useState(null);
-
-  const calculate=()=>{
-    const result=calcTDEE(calc);
-    setCalcResult(result);
-    setG(result);
-  };
-
-  const ok=()=>{ setApiKey(key.trim()); setGoals(g); onClose(); };
-
-  const pickerBtn=(val,cur,set,opts)=>html`
-    <div style=${{display:'flex',flexDirection:'column',gap:6}}>
-      ${opts.map(o=>html`
-        <button key=${o.id} onClick=${()=>set({...cur,[val]:o.id})} style=${{
-          padding:'10px 14px',borderRadius:12,border:'2px solid',cursor:'pointer',textAlign:'left',
-          borderColor:cur[val]===o.id?'#16a34a':'#e5e7eb',
-          background:cur[val]===o.id?'#f0fdf4':'#fff',
-          transition:'all .15s',
-        }}>
-          <p style=${{fontSize:13,fontWeight:700,color:cur[val]===o.id?'#16a34a':'#374151',margin:'0 0 1px'}}>${o.label}</p>
-          ${o.sub?html`<p style=${{fontSize:11,color:'#9ca3af',margin:0}}>${o.sub}</p>`:null}
-        </button>`)}
-    </div>`;
-
+const ACT=[{id:'sedentary',l:'🛋️ Sedentary',s:'Little/no exercise'},{id:'light',l:'🚶 Light',s:'1–3 days/wk'},{id:'moderate',l:'🏃 Moderate',s:'3–5 days/wk'},{id:'active',l:'💪 Active',s:'6–7 days/wk'},{id:'veryactive',l:'🏋️ Very Active',s:'Hard daily training'}];
+const GOPT=[{id:'lose',l:'📉 Lose Weight',s:'−500 kcal/day'},{id:'maintain',l:'⚖️ Maintain',s:'Eat at TDEE'},{id:'gain',l:'📈 Gain Muscle',s:'+300 kcal/day'}];
+function Settings({onClose,apiKey,setApiKey,goals,setGoals}){
+  const [key,setKey]=useState(apiKey), [g,setG]=useState(goals);
+  const [calc,setCalc]=useState({sex:'male',age:30,weight:75,height:175,activity:'moderate',goal:'maintain'});
+  const [result,setResult]=useState(null);
+  const calculate=()=>{const r=calcTDEE(calc);setResult(r);setG(r);};
+  const ok=()=>{setApiKey(key.trim());setGoals(g);onClose();};
   return html`
-    <div onClick=${e=>e.target===e.currentTarget&&onClose()}
-      style=${{position:'fixed',inset:0,background:'rgba(0,0,0,.5)',display:'flex',alignItems:'flex-end',justifyContent:'center',zIndex:50}}>
-      <div style=${{background:'#fff',borderRadius:'24px 24px 0 0',padding:'20px 20px 32px',width:'100%',maxWidth:480,maxHeight:'90vh',overflowY:'auto',boxShadow:'0 -20px 60px rgba(0,0,0,.15)'}}>
-        <div style=${{width:40,height:4,background:'#e5e7eb',borderRadius:99,margin:'0 auto 20px'}}></div>
-        <h2 style=${{fontSize:22,fontWeight:900,color:'#111827',marginBottom:20}}>⚙️ Settings</h2>
+    <div className="sheet-backdrop" onClick=${e=>e.target===e.currentTarget&&onClose()}>
+      <div className="sheet">
+        <div className="drag-handle"></div>
+        <h2 style=${{fontSize:20,fontWeight:900,color:'var(--text1)',marginBottom:20}}>⚙️ Settings</h2>
 
-        <!-- API Key -->
-        <div style=${{marginBottom:24,padding:'16px',background:'#f8fafc',borderRadius:16}}>
-          <label style=${{fontSize:13,fontWeight:700,color:'#374151',display:'block',marginBottom:8}}>
-            🤖 Anthropic API Key
-            <span style=${{fontWeight:400,color:'#9ca3af',marginLeft:4}}>(optional)</span>
-          </label>
+        <!-- API key -->
+        <div style=${{marginBottom:20,padding:14,background:'var(--bg)',borderRadius:14}}>
+          <label style=${{fontSize:13,fontWeight:700,color:'var(--text2)',display:'block',marginBottom:6}}>🤖 Anthropic API Key <span style=${{fontWeight:400,color:'var(--text3)'}}>— optional, enables chat</span></label>
           <input type="password" value=${key} onInput=${e=>setKey(e.target.value)} placeholder="sk-ant-…" />
-          <p style=${{fontSize:12,color:'#9ca3af',marginTop:6}}>Free tier at console.anthropic.com · Stored only in your browser</p>
+          <p style=${{fontSize:11,color:'var(--text3)',marginTop:5}}>Free tier at console.anthropic.com · Stored only in your browser</p>
         </div>
 
-        <!-- TDEE Calculator -->
-        <div style=${{marginBottom:24,background:'linear-gradient(135deg,#f0fdf4,#f0f9ff)',borderRadius:18,padding:16,border:'2px solid #bbf7d0'}}>
-          <h3 style=${{fontSize:16,fontWeight:800,color:'#15803d',marginBottom:4}}>🧮 Calculate My Daily Goals</h3>
-          <p style=${{fontSize:12,color:'#6b7280',marginBottom:16}}>Enter your details to auto-calculate calories and macros using the Mifflin-St Jeor formula</p>
-
-          <!-- Sex -->
-          <div style=${{marginBottom:14}}>
-            <label style=${{fontSize:12,fontWeight:700,color:'#374151',display:'block',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.5px'}}>Biological Sex</label>
-            <div style=${{display:'flex',gap:8}}>
-              ${[['male','👨 Male'],['female','👩 Female']].map(([id,label])=>html`
-                <button key=${id} onClick=${()=>setCalc(c=>({...c,sex:id}))} style=${{
-                  flex:1,padding:'10px',borderRadius:12,border:'2px solid',cursor:'pointer',fontWeight:700,fontSize:13,transition:'all .15s',
-                  borderColor:calc.sex===id?'#16a34a':'#e5e7eb',
-                  background:calc.sex===id?'#16a34a':'#fff',
-                  color:calc.sex===id?'#fff':'#374151',
-                }}>${label}</button>`)}
-            </div>
+        <!-- TDEE calculator -->
+        <div style=${{marginBottom:20,padding:14,background:'linear-gradient(135deg,#f0fdf4,#f0f9ff)',borderRadius:14,border:'2px solid var(--light)'}}>
+          <h3 style=${{fontSize:15,fontWeight:800,color:'var(--deep)',marginBottom:3}}>🧮 Calculate My Goals</h3>
+          <p style=${{fontSize:12,color:'var(--text3)',marginBottom:14}}>Mifflin-St Jeor formula — enter your details below</p>
+          <div style=${{display:'flex',gap:8,marginBottom:12}}>
+            ${[['male','👨 Male'],['female','👩 Female']].map(([id,l])=>html`
+              <button key=${id} className="btn" onClick=${()=>setCalc(c=>({...c,sex:id}))} style=${{flex:1,border:'2px solid',borderColor:calc.sex===id?'var(--primary)':'var(--border)',background:calc.sex===id?'var(--primary)':'var(--surface)',color:calc.sex===id?'#fff':'var(--text2)'}}>${l}</button>`)}
           </div>
-
-          <!-- Age / Weight / Height -->
-          <div style=${{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10,marginBottom:14}}>
-            ${[['age','Age','yrs',99,1],['weight','Weight','kg',300,1],['height','Height','cm',250,100]].map(([key,label,unit])=>html`
-              <div key=${key}>
-                <label style=${{fontSize:12,fontWeight:700,color:'#374151',display:'block',marginBottom:4,textTransform:'uppercase',letterSpacing:'0.5px'}}>${label}</label>
+          <div style=${{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8,marginBottom:12}}>
+            ${[['age','Age','yrs'],['weight','Weight','kg'],['height','Height','cm']].map(([k,l,u])=>html`
+              <div key=${k}>
+                <label style=${{fontSize:11,fontWeight:700,color:'var(--text2)',display:'block',marginBottom:4,textTransform:'uppercase',letterSpacing:'0.4px'}}>${l}</label>
                 <div style=${{position:'relative'}}>
-                  <input type="number" value=${calc[key]}
-                    onInput=${e=>setCalc(c=>({...c,[key]:parseFloat(e.target.value)||0}))}
-                    style=${{paddingRight:28,background:'#fff'}}
-                  />
-                  <span style=${{position:'absolute',right:10,top:'50%',transform:'translateY(-50%)',fontSize:11,color:'#9ca3af'}}>${unit}</span>
+                  <input type="number" value=${calc[k]} onInput=${e=>setCalc(c=>({...c,[k]:parseFloat(e.target.value)||0}))} style=${{paddingRight:28}} />
+                  <span style=${{position:'absolute',right:9,top:'50%',transform:'translateY(-50%)',fontSize:11,color:'var(--text3)'}}>${u}</span>
                 </div>
               </div>`)}
           </div>
-
-          <!-- Activity -->
-          <div style=${{marginBottom:14}}>
-            <label style=${{fontSize:12,fontWeight:700,color:'#374151',display:'block',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.5px'}}>Activity Level</label>
-            <div style=${{display:'flex',flexDirection:'column',gap:6}}>
-              ${ACTIVITY_OPTS.map(o=>html`
-                <button key=${o.id} onClick=${()=>setCalc(c=>({...c,activity:o.id}))} style=${{
-                  padding:'9px 12px',borderRadius:12,border:'2px solid',cursor:'pointer',textAlign:'left',transition:'all .15s',
-                  borderColor:calc.activity===o.id?'#16a34a':'#e5e7eb',
-                  background:calc.activity===o.id?'#f0fdf4':'#fff',
-                }}>
-                  <span style=${{fontSize:13,fontWeight:700,color:calc.activity===o.id?'#16a34a':'#374151'}}>${o.label}</span>
-                  <span style=${{fontSize:11,color:'#9ca3af',marginLeft:6}}>${o.sub}</span>
-                </button>`)}
-            </div>
+          <div style=${{display:'flex',flexDirection:'column',gap:5,marginBottom:12}}>
+            ${ACT.map(o=>html`
+              <button key=${o.id} className="btn" onClick=${()=>setCalc(c=>({...c,activity:o.id}))} style=${{textAlign:'left',padding:'8px 12px',border:'2px solid',borderColor:calc.activity===o.id?'var(--primary)':'var(--border)',background:calc.activity===o.id?'#f0fdf4':'var(--surface)'}}>
+                <span style=${{fontSize:13,fontWeight:700,color:calc.activity===o.id?'var(--primary)':'var(--text1)'}}>${o.l}</span>
+                <span style=${{fontSize:11,color:'var(--text3)',marginLeft:6}}>${o.s}</span>
+              </button>`)}
           </div>
-
-          <!-- Goal -->
-          <div style=${{marginBottom:14}}>
-            <label style=${{fontSize:12,fontWeight:700,color:'#374151',display:'block',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.5px'}}>Goal</label>
-            <div style=${{display:'flex',gap:8}}>
-              ${GOAL_OPTS.map(o=>html`
-                <button key=${o.id} onClick=${()=>setCalc(c=>({...c,goal:o.id}))} style=${{
-                  flex:1,padding:'10px 6px',borderRadius:12,border:'2px solid',cursor:'pointer',textAlign:'center',transition:'all .15s',
-                  borderColor:calc.goal===o.id?'#16a34a':'#e5e7eb',
-                  background:calc.goal===o.id?'#16a34a':'#fff',
-                  color:calc.goal===o.id?'#fff':'#374151',
-                }}>
-                  <p style=${{fontSize:12,fontWeight:700,margin:'0 0 2px'}}>${o.label}</p>
-                  <p style=${{fontSize:10,opacity:.75,margin:0}}>${o.sub}</p>
-                </button>`)}
-            </div>
+          <div style=${{display:'flex',gap:6,marginBottom:12}}>
+            ${GOPT.map(o=>html`
+              <button key=${o.id} className="btn" onClick=${()=>setCalc(c=>({...c,goal:o.id}))} style=${{flex:1,padding:'9px 4px',textAlign:'center',border:'2px solid',borderColor:calc.goal===o.id?'var(--primary)':'var(--border)',background:calc.goal===o.id?'var(--primary)':'var(--surface)',color:calc.goal===o.id?'#fff':'var(--text2)',fontSize:12}}>
+                <p style=${{fontWeight:700,margin:'0 0 2px',fontSize:12}}>${o.l}</p><p style=${{fontSize:10,opacity:.8,margin:0}}>${o.s}</p>
+              </button>`)}
           </div>
-
-          <button onClick=${calculate} style=${{width:'100%',padding:'12px',borderRadius:14,background:'linear-gradient(135deg,#16a34a,#15803d)',color:'#fff',fontWeight:800,fontSize:14,border:'none',cursor:'pointer',letterSpacing:'0.3px'}}>
-            ⚡ Calculate & Set My Goals
-          </button>
-
-          ${calcResult?html`
-            <div style=${{marginTop:12,padding:'12px 14px',background:'#fff',borderRadius:12,border:'1px solid #bbf7d0'}}>
-              <p style=${{fontSize:12,fontWeight:700,color:'#15803d',marginBottom:6}}>✅ Goals updated!</p>
-              <div style=${{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:6,textAlign:'center'}}>
-                ${[['🔥 Cal',calcResult.calories,'#16a34a'],['💪 Pro',calcResult.protein+'g','#3b82f6'],['🌾 Carb',calcResult.carbs+'g','#f97316'],['🥑 Fat',calcResult.fat+'g','#eab308']].map(([l,v,c])=>html`
-                  <div key=${l}><p style=${{fontSize:10,color:'#9ca3af',margin:'0 0 2px'}}>${l}</p><p style=${{fontSize:14,fontWeight:800,color:c,margin:0}}>${v}</p></div>`)}
+          <button className="btn btn-p" style=${{width:'100%',padding:'12px',fontSize:14,background:'var(--deep)'}} onClick=${calculate}>⚡ Calculate & Set My Goals</button>
+          ${result?html`
+            <div style=${{marginTop:10,padding:'10px 12px',background:'var(--surface)',borderRadius:10,border:'1px solid var(--light)'}}>
+              <p style=${{fontSize:12,fontWeight:700,color:'var(--primary)',margin:'0 0 6px'}}>✅ Goals updated!</p>
+              <div style=${{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:4,textAlign:'center'}}>
+                ${[['🔥',result.calories,'var(--accent)'],['💪',result.protein+'g','#3b82f6'],['🌾',result.carbs+'g','#f97316'],['🥑',result.fat+'g','#eab308']].map(([l,v,c])=>html`
+                  <div key=${l}><p style=${{fontSize:10,color:'var(--text3)',margin:'0 0 2px'}}>${l}</p><p style=${{fontSize:14,fontWeight:800,color:c,margin:0}}>${v}</p></div>`)}
               </div>
             </div>`:null}
         </div>
 
-        <!-- Manual goals override -->
-        <div style=${{marginBottom:24,padding:16,background:'#f8fafc',borderRadius:16}}>
-          <h3 style=${{fontSize:14,fontWeight:800,color:'#374151',marginBottom:12}}>🎯 Daily Goals (manual override)</h3>
-          ${['calories','protein','carbs','fat'].map(k2=>html`
-            <div key=${k2} style=${{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
-              <label style=${{fontSize:13,color:'#374151',textTransform:'capitalize',fontWeight:600}}>
-                ${{ calories:'🔥 Calories', protein:'💪 Protein', carbs:'🌾 Carbs', fat:'🥑 Fat' }[k2]} ${k2==='calories'?'(kcal)':'(g)'}
-              </label>
-              <input type="number" value=${g[k2]}
-                onInput=${e=>setG(prev=>({...prev,[k2]:parseInt(e.target.value)||0}))}
-                style=${{width:90,textAlign:'right'}}
-              />
+        <!-- Manual goals -->
+        <div style=${{marginBottom:20,padding:14,background:'var(--bg)',borderRadius:14}}>
+          <h3 style=${{fontSize:14,fontWeight:700,color:'var(--text2)',marginBottom:12}}>🎯 Daily Goals</h3>
+          ${[['calories','🔥 Calories','kcal'],['protein','💪 Protein','g'],['carbs','🌾 Carbs','g'],['fat','🥑 Fat','g']].map(([k,l,u])=>html`
+            <div key=${k} style=${{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
+              <label style=${{fontSize:13,fontWeight:600,color:'var(--text1)'}}>${l} (${u})</label>
+              <input type="number" value=${g[k]} onInput=${e=>setG(p=>({...p,[k]:parseInt(e.target.value)||0}))} style=${{width:90,textAlign:'right'}} />
             </div>`)}
         </div>
-
         <div style=${{display:'flex',gap:10}}>
-          <button onClick=${onClose} className="btn-ghost" style=${{flex:1}}>Cancel</button>
-          <button onClick=${ok} className="btn-primary" style=${{flex:2}}>💾 Save Settings</button>
+          <button className="btn btn-g" style=${{flex:1}} onClick=${onClose}>Cancel</button>
+          <button className="btn btn-p" style=${{flex:2}} onClick=${ok}>💾 Save</button>
         </div>
       </div>
     </div>`;
 }
 
 // ── App ───────────────────────────────────────────────────────────────────────
-function App() {
+function App(){
   const [tab,setTab]=useState('log');
   const [showSett,setSett]=useState(false);
   const [apiKey,setApiKey_]=useState(()=>load('apiKey',''));
   const [goals,setGoals_]=useState(()=>load('goals',GOALS_DEF));
   const [allMeals,setAllMeals]=useState(()=>load('meals',[]));
+  const [plans,setPlans_]=useState(()=>load('plans',[]));
+  const [groceries,setGroceries_]=useState(()=>load('groceries',[]));
+  const [editingMeal,setEditingMeal]=useState(null);
+  const [groceryPrompt,setGroceryPrompt]=useState(null);
 
-  const ts=todayISO();
-  const todayMeals=allMeals.filter(m=>m.date===ts);
-  const todayCal=todayMeals.reduce((s,m)=>s+m.calories,0);
-  const calPct=Math.min(100,rnd((todayCal/goals.calories)*100));
+  const ts=todayISO(), todayMeals=allMeals.filter(m=>m.date===ts);
+  const todayCal=todayMeals.reduce((s,m)=>s+m.calories,0), calPct=Math.min(100,rnd((todayCal/goals.calories)*100));
 
   const setApiKey=k=>{setApiKey_(k);persist('apiKey',k);};
   const setGoals=g=>{setGoals_(g);persist('goals',g);};
-  const addMeal=m=>setAllMeals(prev=>{const n=[...prev,m];persist('meals',n);return n;});
-  const delMeal=id=>setAllMeals(prev=>{const n=prev.filter(m=>m.id!==id);persist('meals',n);return n;});
+  const addMeal=m=>setAllMeals(p=>{const n=[...p,m];persist('meals',n);return n;});
+  const delMeal=id=>setAllMeals(p=>{const n=p.filter(m=>m.id!==id);persist('meals',n);return n;});
+  const editMeal=updated=>{ setAllMeals(p=>{const n=p.map(m=>m.id===updated.id?updated:m);persist('meals',n);return n;}); setEditingMeal(null); };
+  const savePlan=(name,meals)=>{const n=[...plans,{id:newId(),name,createdAt:ts,meals}];setPlans_(n);persist('plans',n);};
+  const deletePlan=id=>{const n=plans.filter(p=>p.id!==id);setPlans_(n);persist('plans',n);};
+  const usePlan=plan=>setGroceryPrompt(plan);
+  const applyPlan=(plan,addGrocery)=>{
+    const time=nowTime();
+    plan.meals.forEach(m=>addMeal({...m,id:newId(),date:ts,time,source:'plan'}));
+    if(addGrocery) plan.meals.forEach(m=>addGroceryItem(m.name,`From: ${plan.name}`));
+    setGroceryPrompt(null); setTab('today');
+  };
+  const addGroceryItem=(text,source='')=>{const n=[...groceries,{id:newId(),text,checked:false,source}];setGroceries_(n);persist('groceries',n);};
+  const toggleGrocery=id=>{const n=groceries.map(g=>g.id===id?{...g,checked:!g.checked}:g);setGroceries_(n);persist('groceries',n);};
+  const deleteGrocery=id=>{const n=groceries.filter(g=>g.id!==id);setGroceries_(n);persist('groceries',n);};
+  const clearChecked=()=>{const n=groceries.filter(g=>!g.checked);setGroceries_(n);persist('groceries',n);};
 
-  useEffect(()=>{ if(!apiKey) setSett(true); },[]);
+  useEffect(()=>{if(!apiKey) setSett(true);},[]);
+
+  const TABS=[['log','🍴 Log'],['today','📊 Today'],['week','📅 Week'],['grocery','🛒 Grocery']];
 
   return html`
-    <div style=${{maxWidth:480,margin:'0 auto',minHeight:'100vh',display:'flex',flexDirection:'column',background:'#f0fdf4'}}>
-
+    <div style=${{maxWidth:480,margin:'0 auto',minHeight:'100vh',display:'flex',flexDirection:'column',background:'var(--bg)'}}>
       <!-- Header -->
-      <div style=${{background:'#fff',borderBottom:'1px solid #e5e7eb',padding:'12px 16px',position:'sticky',top:0,zIndex:10}}>
+      <div style=${{background:'var(--surface)',borderBottom:'1px solid var(--border)',padding:'12px 16px',position:'sticky',top:0,zIndex:10}}>
         <div style=${{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
           <div>
-            <h1 style=${{fontSize:22,fontWeight:900,color:'#111827',letterSpacing:'-0.5px'}}>🥗 Meal Tracker</h1>
-            <p style=${{fontSize:12,color:'#9ca3af',marginTop:1}}>${todayCal.toLocaleString()} / ${goals.calories.toLocaleString()} kcal today</p>
+            <h1 style=${{fontSize:20,fontWeight:900,color:'var(--deep)',letterSpacing:'-0.5px'}}>🥗 Meal Tracker</h1>
+            <p style=${{fontSize:12,color:'var(--text3)',marginTop:1}}>${todayCal.toLocaleString()} / ${goals.calories.toLocaleString()} kcal today</p>
           </div>
           <div style=${{display:'flex',alignItems:'center',gap:10}}>
-            <div style=${{position:'relative',width:46,height:46}}>
-              <svg width="46" height="46" viewBox="0 0 46 46">
-                <circle cx="23" cy="23" r="19" fill="none" stroke="#e5e7eb" strokeWidth="4.5"/>
-                <circle cx="23" cy="23" r="19" fill="none"
-                  stroke=${todayCal>goals.calories?'#f87171':'#16a34a'} strokeWidth="4.5"
-                  strokeDasharray=${`${(calPct/100*119.4).toFixed(1)} 119.4`}
-                  strokeDashoffset="29.8"
-                  strokeLinecap="round"/>
+            <div style=${{position:'relative',width:44,height:44}}>
+              <svg width="44" height="44" viewBox="0 0 44 44">
+                <circle cx="22" cy="22" r="18" fill="none" stroke="var(--border)" strokeWidth="4"/>
+                <circle cx="22" cy="22" r="18" fill="none"
+                  stroke=${todayCal>goals.calories?'#f87171':'var(--primary)'} strokeWidth="4"
+                  strokeDasharray=${`${(calPct/100*113.1).toFixed(1)} 113.1`}
+                  strokeDashoffset="28.3" strokeLinecap="round"/>
               </svg>
-              <div style=${{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:800,color:'#374151'}}>${calPct}%</div>
+              <div style=${{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:800,color:'var(--deep)'}}>${calPct}%</div>
             </div>
-            <button onClick=${()=>setSett(true)}
-              style=${{background:'#f0fdf4',border:'2px solid #bbf7d0',borderRadius:12,padding:'8px 10px',cursor:'pointer',fontSize:16}}>⚙️</button>
+            <button onClick=${()=>setSett(true)} style=${{background:'var(--bg)',border:'1.5px solid var(--border)',borderRadius:11,padding:'8px 10px',cursor:'pointer',fontSize:16,lineHeight:1}}>⚙️</button>
           </div>
         </div>
       </div>
 
-      <!-- Tab bar -->
-      <div style=${{background:'#fff',borderBottom:'1px solid #e5e7eb',display:'flex',padding:'0 4px'}}>
-        ${[['log','🍴 Log'],['today','📊 Today'],['week','📅 Week']].map(([id,label])=>html`
-          <button key=${id} className="tab-btn" onClick=${()=>setTab(id)}
-            style=${{color:tab===id?'#16a34a':'#9ca3af',borderBottomColor:tab===id?'#16a34a':'transparent'}}>
-            ${label}
-          </button>`)}
+      <!-- Tabs -->
+      <div style=${{background:'var(--surface)',borderBottom:'1px solid var(--border)',display:'flex',padding:'0 4px'}}>
+        ${TABS.map(([id,label])=>html`
+          <button key=${id} className=${'tab-btn'+(tab===id?' active':'')} onClick=${()=>setTab(id)}>${label}</button>`)}
       </div>
 
       <!-- Content -->
       <div style=${{flex:1,overflowY:'auto'}}>
-        ${tab==='log'   ? html`<${LogTab}   apiKey=${apiKey} onLog=${addMeal} />` : null}
-        ${tab==='today' ? html`<${TodayTab} meals=${todayMeals} goals=${goals} onDelete=${delMeal} />` : null}
-        ${tab==='week'  ? html`<${WeekTab}  allMeals=${allMeals} />` : null}
+        ${tab==='log'    ? html`<${LogTab}     apiKey=${apiKey} onLog=${addMeal} allMeals=${allMeals} />` : null}
+        ${tab==='today'  ? html`<${TodayTab}   meals=${todayMeals} goals=${goals} onDelete=${delMeal} onEdit=${setEditingMeal} setTab=${setTab} />` : null}
+        ${tab==='week'   ? html`<${WeekTab}    allMeals=${allMeals} plans=${plans} onSavePlan=${savePlan} onDeletePlan=${deletePlan} onUsePlan=${usePlan} />` : null}
+        ${tab==='grocery'? html`<${GroceryTab} items=${groceries} onAdd=${addGroceryItem} onToggle=${toggleGrocery} onDelete=${deleteGrocery} onClearChecked=${clearChecked} />` : null}
       </div>
 
-      ${showSett?html`<${Settings} onClose=${()=>setSett(false)} apiKey=${apiKey} setApiKey=${setApiKey} goals=${goals} setGoals=${setGoals} />`:null}
+      ${editingMeal ? html`<${EditMealModal} meal=${editingMeal} onSave=${editMeal} onClose=${()=>setEditingMeal(null)} />` : null}
+      ${groceryPrompt ? html`<${GroceryPromptModal} plan=${groceryPrompt} onConfirm=${addGrocery=>applyPlan(groceryPrompt,addGrocery)} onClose=${()=>setGroceryPrompt(null)} />` : null}
+      ${showSett ? html`<${Settings} onClose=${()=>setSett(false)} apiKey=${apiKey} setApiKey=${setApiKey} goals=${goals} setGoals=${setGoals} />` : null}
     </div>`;
 }
 
