@@ -804,10 +804,11 @@ const ACT=[{id:'sedentary',l:'🛋️ Sedentary',s:'Little/no exercise'},{id:'li
 const GOPT=[{id:'lose',l:'📉 Lose Weight',s:'−500 kcal/day'},{id:'maintain',l:'⚖️ Maintain',s:'Eat at TDEE'},{id:'gain',l:'📈 Gain Muscle',s:'+300 kcal/day'}];
 function Settings({onClose,apiKey,setApiKey,goals,setGoals}){
   const [key,setKey]=useState(apiKey), [g,setG]=useState(goals);
-  const [calc,setCalc]=useState({sex:'male',age:30,weight:75,height:175,activity:'moderate',goal:'maintain'});
+  const [calc,setCalc]=useState(()=>load('tdeeCalc',{sex:'male',age:30,weight:75,height:175,activity:'moderate',goal:'maintain'}));
   const [result,setResult]=useState(null);
   const [saved,setSaved]=useState(false);
   const saveGoals=newG=>{setGoals(newG);setSaved(true);setTimeout(()=>setSaved(false),2000);};
+  const updateCalc=v=>{const n={...calc,...v};setCalc(n);persist('tdeeCalc',n);};
   const calculate=()=>{const r=calcTDEE(calc);setResult(r);setG(r);saveGoals(r);};
   const ok=()=>{setApiKey(key.trim());onClose()};
   const exportData=()=>{
@@ -850,28 +851,28 @@ function Settings({onClose,apiKey,setApiKey,goals,setGoals}){
           <p style=${{fontSize:12,color:'var(--text3)',marginBottom:14}}>Mifflin-St Jeor formula — enter your details below</p>
           <div style=${{display:'flex',gap:8,marginBottom:12}}>
             ${[['male','👨 Male'],['female','👩 Female']].map(([id,l])=>html`
-              <button key=${id} className="btn" onClick=${()=>setCalc(c=>({...c,sex:id}))} style=${{flex:1,border:'2px solid',borderColor:calc.sex===id?'var(--primary)':'var(--border)',background:calc.sex===id?'var(--primary)':'var(--surface)',color:calc.sex===id?'#fff':'var(--text2)'}}>${l}</button>`)}
+              <button key=${id} className="btn" onClick=${()=>updateCalc({sex:id})} style=${{flex:1,border:'2px solid',borderColor:calc.sex===id?'var(--primary)':'var(--border)',background:calc.sex===id?'var(--primary)':'var(--surface)',color:calc.sex===id?'#fff':'var(--text2)'}}>${l}</button>`)}
           </div>
           <div style=${{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8,marginBottom:12}}>
             ${[['age','Age','yrs'],['weight','Weight','kg'],['height','Height','cm']].map(([k,l,u])=>html`
               <div key=${k}>
                 <label style=${{fontSize:11,fontWeight:700,color:'var(--text2)',display:'block',marginBottom:4,textTransform:'uppercase',letterSpacing:'0.4px'}}>${l}</label>
                 <div style=${{position:'relative'}}>
-                  <input type="number" value=${calc[k]} onInput=${e=>setCalc(c=>({...c,[k]:parseFloat(e.target.value)||0}))} style=${{paddingRight:28}} />
+                  <input type="number" value=${calc[k]} onBlur=${e=>updateCalc({[k]:parseFloat(e.target.value)||0})} style=${{paddingRight:28}} />
                   <span style=${{position:'absolute',right:9,top:'50%',transform:'translateY(-50%)',fontSize:11,color:'var(--text3)'}}>${u}</span>
                 </div>
               </div>`)}
           </div>
           <div style=${{display:'flex',flexDirection:'column',gap:5,marginBottom:12}}>
             ${ACT.map(o=>html`
-              <button key=${o.id} className="btn" onClick=${()=>setCalc(c=>({...c,activity:o.id}))} style=${{textAlign:'left',padding:'8px 12px',border:'2px solid',borderColor:calc.activity===o.id?'var(--primary)':'var(--border)',background:calc.activity===o.id?'#f0fdf4':'var(--surface)'}}>
+              <button key=${o.id} className="btn" onClick=${()=>updateCalc({activity:o.id})} style=${{textAlign:'left',padding:'8px 12px',border:'2px solid',borderColor:calc.activity===o.id?'var(--primary)':'var(--border)',background:calc.activity===o.id?'#f0fdf4':'var(--surface)'}}>
                 <span style=${{fontSize:13,fontWeight:700,color:calc.activity===o.id?'var(--primary)':'var(--text1)'}}>${o.l}</span>
                 <span style=${{fontSize:11,color:'var(--text3)',marginLeft:6}}>${o.s}</span>
               </button>`)}
           </div>
           <div style=${{display:'flex',gap:6,marginBottom:12}}>
             ${GOPT.map(o=>html`
-              <button key=${o.id} className="btn" onClick=${()=>setCalc(c=>({...c,goal:o.id}))} style=${{flex:1,padding:'9px 4px',textAlign:'center',border:'2px solid',borderColor:calc.goal===o.id?'var(--primary)':'var(--border)',background:calc.goal===o.id?'var(--primary)':'var(--surface)',color:calc.goal===o.id?'#fff':'var(--text2)',fontSize:12}}>
+              <button key=${o.id} className="btn" onClick=${()=>updateCalc({goal:o.id})} style=${{flex:1,padding:'9px 4px',textAlign:'center',border:'2px solid',borderColor:calc.goal===o.id?'var(--primary)':'var(--border)',background:calc.goal===o.id?'var(--primary)':'var(--surface)',color:calc.goal===o.id?'#fff':'var(--text2)',fontSize:12}}>
                 <p style=${{fontWeight:700,margin:'0 0 2px',fontSize:12}}>${o.l}</p><p style=${{fontSize:10,opacity:.8,margin:0}}>${o.s}</p>
               </button>`)}
           </div>
