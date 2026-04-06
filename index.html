@@ -806,10 +806,10 @@ function Settings({onClose,apiKey,setApiKey,goals,setGoals}){
   const [key,setKey]=useState(apiKey), [g,setG]=useState(goals);
   const [calc,setCalc]=useState({sex:'male',age:30,weight:75,height:175,activity:'moderate',goal:'maintain'});
   const [result,setResult]=useState(null);
-  const isFirst=useRef(true);
-  useEffect(()=>{if(isFirst.current){isFirst.current=false;return;}setGoals(g);},[g]);
-  const calculate=()=>{const r=calcTDEE(calc);setResult(r);setG(r);};
-  const ok=()=>{setApiKey(key.trim());onClose();};
+  const [saved,setSaved]=useState(false);
+  const saveGoals=newG=>{setGoals(newG);setSaved(true);setTimeout(()=>setSaved(false),2000);};
+  const calculate=()=>{const r=calcTDEE(calc);setResult(r);setG(r);saveGoals(r);};
+  const ok=()=>{setApiKey(key.trim());onClose()};
   const exportData=()=>{
     const data={meals:load('meals',[]),goals:load('goals',GOALS_DEF),plans:load('plans',[]),groceries:load('groceries',[]),exportedAt:new Date().toISOString()};
     const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
@@ -888,11 +888,17 @@ function Settings({onClose,apiKey,setApiKey,goals,setGoals}){
 
         <!-- Manual goals -->
         <div style=${{marginBottom:20,padding:14,background:'var(--bg)',borderRadius:14}}>
-          <h3 style=${{fontSize:14,fontWeight:700,color:'var(--text2)',marginBottom:12}}>🎯 Daily Goals</h3>
+          <div style=${{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
+            <h3 style=${{fontSize:14,fontWeight:700,color:'var(--text2)',margin:0}}>🎯 Daily Goals</h3>
+            ${saved?html`<span style=${{fontSize:12,color:'var(--primary)',fontWeight:700}}>✓ Saved</span>`:null}
+          </div>
           ${[['calories','🔥 Calories','kcal'],['protein','💪 Protein','g'],['carbs','🌾 Carbs','g'],['fat','🥑 Fat','g']].map(([k,l,u])=>html`
             <div key=${k} style=${{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
               <label style=${{fontSize:13,fontWeight:600,color:'var(--text1)'}}>${l} (${u})</label>
-              <input type="number" value=${g[k]} onInput=${e=>setG(p=>({...p,[k]:parseInt(e.target.value)||0}))} style=${{width:90,textAlign:'right'}} />
+              <input type="number" value=${g[k]||''} placeholder="0"
+                onInput=${e=>setG(p=>({...p,[k]:e.target.value}))}
+                onBlur=${e=>{const v=parseInt(e.target.value)||0;const newG={...g,[k]:v};setG(newG);saveGoals(newG);}}
+                style=${{width:90,textAlign:'right'}} />
             </div>`)}
         </div>
         <!-- Backup & Restore -->
