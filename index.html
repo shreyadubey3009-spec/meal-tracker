@@ -316,15 +316,38 @@ function ServingPicker({food,onLog,onClose}){
 }
 
 // ── FoodSearch ────────────────────────────────────────────────────────────────
-function FoodSearch({onLog}){
+function FoodSearch({onLog,favorites,onToggleFav}){
   const [q,setQ]=useState(''), [offRes,setOff]=useState([]), [loading,setLoad]=useState(false), [sel,setSel]=useState(null);
   const dq=useDebounce(q,400), builtin=useMemo(()=>dbSearch(dq),[dq]);
   useEffect(()=>{
     if(!dq.trim()||dq.length<2){setOff([]);return;}
     setLoad(true); searchOFF(dq).then(setOff).catch(()=>setOff([])).finally(()=>setLoad(false));
   },[dq]);
-  const results=[...builtin,...offRes.filter(o=>!builtin.some(b=>b.name.toLowerCase()===o.name.toLowerCase()))];
+  const allResults=[...builtin,...offRes.filter(o=>!builtin.some(b=>b.name.toLowerCase()===o.name.toLowerCase()))];
+  const results=useMemo(()=>[...allResults.filter(f=>favorites.includes(f.id)),...allResults.filter(f=>!favorites.includes(f.id))],[allResults,favorites]);
+  const favFoods=useMemo(()=>DB.filter(f=>favorites.includes(f.id)),[favorites]);
   const handleLog=food=>{onLog({...food,id:newId(),date:todayISO(),time:nowTime()});setSel(null);setQ('');};
+  const FoodRow=({food})=>html`
+    <div key=${food.id} className="card" style=${{marginBottom:8,overflow:'hidden',outline:sel===food.id?'2px solid var(--primary)':'2px solid transparent',transition:'outline .15s'}}>
+      <div style=${{display:'flex',alignItems:'center'}}>
+        <button onClick=${()=>setSel(sel===food.id?null:food.id)}
+          style=${{flex:1,textAlign:'left',padding:'13px 15px',background:'none',border:'none',cursor:'pointer',display:'flex',justifyContent:'space-between',alignItems:'center',minWidth:0}}>
+          <div style=${{flex:1,minWidth:0}}>
+            <p style=${{fontSize:14,fontWeight:700,color:'var(--text1)',margin:'0 0 3px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>${CAT_EMOJI[food.cat]||'🍽️'} ${food.name}</p>
+            <p style=${{fontSize:12,color:'var(--text3)',margin:0}}>${food.cat} · ${food.cal} kcal / 100 g</p>
+          </div>
+          <div style=${{display:'flex',gap:6,marginLeft:10,flexShrink:0,alignItems:'center'}}>
+            ${food.source==='off'?html`<span style=${{fontSize:10,fontWeight:700,padding:'2px 6px',borderRadius:6,background:'#eff6ff',color:'#3b82f6'}}>OFF</span>`:html`<span style=${{fontSize:10,fontWeight:700,padding:'2px 6px',borderRadius:6,background:'var(--light)',color:'var(--primary)'}}>DB</span>`}
+            <span style=${{color:'var(--text3)',fontSize:11}}>${sel===food.id?'▲':'▼'}</span>
+          </div>
+        </button>
+        ${food.source!=='off'?html`
+          <button onClick=${e=>{e.stopPropagation();onToggleFav(food.id);}} style=${{padding:'0 14px 0 4px',background:'none',border:'none',cursor:'pointer',fontSize:18,flexShrink:0}}>
+            ${favorites.includes(food.id)?'⭐':'☆'}
+          </button>`:null}
+      </div>
+      ${sel===food.id?html`<${ServingPicker} food=${food} onLog=${handleLog} onClose=${()=>setSel(null)} />`:null}
+    </div>`;
   return html`
     <div style=${{padding:16}}>
       <div style=${{position:'relative',marginBottom:14}}>
@@ -332,10 +355,16 @@ function FoodSearch({onLog}){
         <input type="text" value=${q} onInput=${e=>{setQ(e.target.value);setSel(null);}} placeholder="Search foods (chicken, oats, apple…)" style=${{paddingLeft:40,paddingRight:q?36:14}} />
         ${q?html`<button onClick=${()=>{setQ('');setOff([]);}} style=${{position:'absolute',right:10,top:'50%',transform:'translateY(-50%)',background:'#f1f5f9',border:'none',borderRadius:99,width:22,height:22,cursor:'pointer',color:'var(--text3)',fontSize:13}}>✕</button>`:null}
       </div>
-      ${!q?html`<div style=${{textAlign:'center',padding:'40px 0'}}>
-          <div style=${{fontSize:48,marginBottom:10}}>🥦🍗🍌</div>
-          <p style=${{fontSize:16,fontWeight:700,color:'var(--text2)',margin:'0 0 4px'}}>Search 49 common foods</p>
-          <p style=${{fontSize:13,color:'var(--text3)'}}>Instant results · Packaged foods from Open Food Facts</p>
+      ${!q?html`<div>
+          ${favFoods.length?html`
+            <p style=${{fontSize:13,fontWeight:700,color:'var(--text2)',marginBottom:8}}>⭐ Favorites</p>
+            ${favFoods.map(food=>html`<${FoodRow} food=${food} />`)}
+            <p style=${{fontSize:13,fontWeight:700,color:'var(--text2)',margin:'16px 0 8px'}}>All foods</p>`:null}
+          <div style=${{textAlign:'center',padding:favFoods.length?'16px 0':'40px 0'}}>
+            <div style=${{fontSize:48,marginBottom:10}}>🥦🍗🍌</div>
+            <p style=${{fontSize:16,fontWeight:700,color:'var(--text2)',margin:'0 0 4px'}}>Search 49 common foods</p>
+            <p style=${{fontSize:13,color:'var(--text3)'}}>Star ☆ any food to save it as a favorite</p>
+          </div>
         </div>`
       :results.length===0&&!loading?html`<div style=${{textAlign:'center',padding:'40px 0'}}>
           <div style=${{fontSize:40,marginBottom:8}}>🤷</div>
@@ -343,21 +372,7 @@ function FoodSearch({onLog}){
           <p style=${{fontSize:13,color:'var(--text3)'}}>Try Chat to describe your meal instead</p>
         </div>`
       :html`<div>
-          ${results.map(food=>html`
-            <div key=${food.id} className="card" style=${{marginBottom:8,overflow:'hidden',outline:sel===food.id?'2px solid var(--primary)':'2px solid transparent',transition:'outline .15s'}}>
-              <button onClick=${()=>setSel(sel===food.id?null:food.id)}
-                style=${{width:'100%',textAlign:'left',padding:'13px 15px',background:'none',border:'none',cursor:'pointer',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                <div style=${{flex:1,minWidth:0}}>
-                  <p style=${{fontSize:14,fontWeight:700,color:'var(--text1)',margin:'0 0 3px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>${CAT_EMOJI[food.cat]||'🍽️'} ${food.name}</p>
-                  <p style=${{fontSize:12,color:'var(--text3)',margin:0}}>${food.cat} · ${food.cal} kcal / 100 g</p>
-                </div>
-                <div style=${{display:'flex',gap:6,marginLeft:10,flexShrink:0,alignItems:'center'}}>
-                  ${food.source==='off'?html`<span style=${{fontSize:10,fontWeight:700,padding:'2px 6px',borderRadius:6,background:'#eff6ff',color:'#3b82f6'}}>OFF</span>`:html`<span style=${{fontSize:10,fontWeight:700,padding:'2px 6px',borderRadius:6,background:'var(--light)',color:'var(--primary)'}}>DB</span>`}
-                  <span style=${{color:'var(--text3)',fontSize:11}}>${sel===food.id?'▲':'▼'}</span>
-                </div>
-              </button>
-              ${sel===food.id?html`<${ServingPicker} food=${food} onLog=${handleLog} onClose=${()=>setSel(null)} />`:null}
-            </div>`)}
+          ${results.map(food=>html`<${FoodRow} food=${food} />`)}
           ${loading?html`<div style=${{display:'flex',alignItems:'center',justifyContent:'center',gap:8,padding:'14px 0',color:'var(--text3)',fontSize:13}}>
             <div className="spin" style=${{width:16,height:16,border:'2px solid var(--border)',borderTopColor:'var(--primary)',borderRadius:99}}></div>
             Searching food database…
@@ -369,23 +384,24 @@ function FoodSearch({onLog}){
 // ── ChatLogger ────────────────────────────────────────────────────────────────
 function ChatLogger({apiKey,onLog}){
   const [msgs,setMsgs]=useState([{role:'assistant',content:'Hi! 👋 Describe what you ate and I\'ll estimate the nutrition. Try: "bowl of oatmeal with blueberries and an oat milk latte" or "grilled chicken salad, medium portion."',meals:null}]);
-  const [input,setInput]=useState(''), [loading,setLoad]=useState(false), [pending,setPend]=useState([]);
+  const [input,setInput]=useState(''), [loading,setLoad]=useState(false), [pending,setPend]=useState([]), [servings,setServings]=useState([]);
   const endRef=useRef(null), inpRef=useRef(null);
   useEffect(()=>endRef.current?.scrollIntoView({behavior:'smooth'}),[msgs]);
   const history=msgs.slice(1).map(m=>({role:m.role==='assistant'?'assistant':'user',content:m.content}));
+  const lastMealIdx=msgs.reduce((a,m,i)=>m.meals?.length?i:a,-1);
   const send=async()=>{
     const text=input.trim(); if(!text||loading) return;
     setInput(''); setMsgs(m=>[...m,{role:'user',content:text}]); setLoad(true);
     try{const r=await callClaude([...history,{role:'user',content:text}],apiKey);
       setMsgs(m=>[...m,{role:'assistant',content:r.message,meals:r.meals?.length?r.meals:null}]);
-      if(r.meals?.length) setPend(r.meals);
+      if(r.meals?.length){setPend(r.meals);setServings(r.meals.map(()=>1));}
     }catch(e){setMsgs(m=>[...m,{role:'assistant',content:'⚠️ Error: '+e.message,meals:null}]);}
     finally{setLoad(false);inpRef.current?.focus();}
   };
   const logAll=()=>{
     const time=nowTime(),date=todayISO();
-    pending.forEach(m=>onLog({...m,id:newId(),date,time,source:'ai'}));
-    const n=pending.length; setPend([]);
+    pending.forEach((m,i)=>{const s=servings[i]||1;onLog({...m,calories:rnd(m.calories*s),protein:rnd(m.protein*s),carbs:rnd(m.carbs*s),fat:rnd(m.fat*s),id:newId(),date,time,source:'ai'});});
+    const n=pending.length; setPend([]); setServings([]);
     setMsgs(m=>[...m,{role:'assistant',content:`✅ Logged! ${n===1?pending[0]?.name||'Meal':n+' meals'} added. Anything else?`,meals:null}]);
   };
   return html`
@@ -401,22 +417,34 @@ function ChatLogger({apiKey,onLog}){
                     <div className="ai-bubble" style=${{padding:'10px 14px',fontSize:14,lineHeight:1.55}}>${msg.content}</div>
                     ${msg.meals?.length?html`
                       <div style=${{marginTop:8}}>
-                        ${msg.meals.map((m,mi)=>html`
+                        ${msg.meals.map((m,mi)=>{
+                          const isActive=i===lastMealIdx&&pending.length>0;
+                          const s=isActive?(servings[mi]||1):1;
+                          return html`
                           <div key=${mi} className="card" style=${{padding:'11px 14px',marginBottom:6}}>
                             <div style=${{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:6}}>
                               <div><${TypeBadge} type=${m.mealType} /><p style=${{fontSize:14,fontWeight:700,color:'var(--text1)',marginTop:4}}>${m.name}</p></div>
-                              <span style=${{fontSize:17,fontWeight:800,color:'var(--accent)',marginLeft:10}}>${m.calories}<span style=${{fontSize:11,fontWeight:500,color:'var(--text3)'}}> kcal</span></span>
+                              <span style=${{fontSize:17,fontWeight:800,color:'var(--accent)',marginLeft:10}}>${rnd(m.calories*s)}<span style=${{fontSize:11,fontWeight:500,color:'var(--text3)'}}> kcal</span></span>
                             </div>
-                            <div style=${{display:'flex',gap:12,fontSize:12}}>
-                              <span style=${{color:'#3b82f6',fontWeight:700}}>💪 ${m.protein}g</span>
-                              <span style=${{color:'#f97316',fontWeight:700}}>🌾 ${m.carbs}g</span>
-                              <span style=${{color:'#eab308',fontWeight:700}}>🥑 ${m.fat}g</span>
+                            <div style=${{display:'flex',gap:12,fontSize:12,marginBottom:isActive?8:0}}>
+                              <span style=${{color:'#3b82f6',fontWeight:700}}>💪 ${rnd(m.protein*s)}g</span>
+                              <span style=${{color:'#f97316',fontWeight:700}}>🌾 ${rnd(m.carbs*s)}g</span>
+                              <span style=${{color:'#eab308',fontWeight:700}}>🥑 ${rnd(m.fat*s)}g</span>
                             </div>
-                          </div>`)}
+                            ${isActive?html`
+                              <div style=${{display:'flex',alignItems:'center',gap:8,borderTop:'1px solid var(--border)',paddingTop:8}}>
+                                <span style=${{fontSize:11,color:'var(--text3)',fontWeight:600,flex:1}}>Servings</span>
+                                <button onClick=${()=>setServings(sv=>{const n=[...sv];n[mi]=Math.max(0.5,+(n[mi]-0.5).toFixed(1));return n;})} style=${{border:'1px solid var(--border)',borderRadius:8,width:28,height:28,cursor:'pointer',background:'var(--bg)',fontSize:16,display:'flex',alignItems:'center',justifyContent:'center'}}>−</button>
+                                <span style=${{minWidth:28,textAlign:'center',fontSize:14,fontWeight:800,color:'var(--text1)'}}>${s}</span>
+                                <button onClick=${()=>setServings(sv=>{const n=[...sv];n[mi]=+(n[mi]+0.5).toFixed(1);return n;})} style=${{border:'1px solid var(--border)',borderRadius:8,width:28,height:28,cursor:'pointer',background:'var(--bg)',fontSize:16,display:'flex',alignItems:'center',justifyContent:'center'}}>+</button>
+                              </div>`:null}
+                          </div>`;
+                        })}
+                        ${pending.length?html`
                         <div style=${{display:'flex',gap:8,marginTop:4}}>
                           <button className="btn btn-p" style=${{flex:1}} onClick=${logAll}>✅ Log ${pending.length>1?'all':'this'}</button>
-                          <button className="btn btn-g" onClick=${()=>setPend([])}>Edit</button>
-                        </div>
+                          <button className="btn btn-g" onClick=${()=>{setPend([]);setServings([]);}}>Dismiss</button>
+                        </div>`:null}
                       </div>`:null}
                   </div>
                 </div>`
@@ -462,7 +490,7 @@ function QuickAddRecents({allMeals,onLog}){
 }
 
 // ── LogTab ────────────────────────────────────────────────────────────────────
-function LogTab({apiKey,onLog,allMeals}){
+function LogTab({apiKey,onLog,allMeals,favorites,onToggleFav}){
   const [mode,setMode]=useState(apiKey?'chat':'search');
   return html`
     <div>
@@ -479,7 +507,7 @@ function LogTab({apiKey,onLog,allMeals}){
         💡 <strong>Chat logging</strong> needs an Anthropic API key — add one in ⚙️ Settings. Free tier available.
       </div>`:null}
       ${mode==='chat'&&apiKey?html`<${ChatLogger} apiKey=${apiKey} onLog=${onLog} />`:null}
-      ${mode==='search'?html`<${FoodSearch} onLog=${onLog} />`:null}
+      ${mode==='search'?html`<${FoodSearch} onLog=${onLog} favorites=${favorites} onToggleFav=${onToggleFav} />`:null}
     </div>`;
 }
 
@@ -496,10 +524,18 @@ function DailySummaryBar({meals}){
 }
 
 // ── TodayTab ──────────────────────────────────────────────────────────────────
-function TodayTab({meals,goals,onDelete,onEdit,setTab}){
+function TodayTab({meals,goals,onDelete,onEdit,setTab,exercises,onAddExercise,onDelExercise}){
   const tot=meals.reduce((a,m)=>({calories:a.calories+m.calories,protein:a.protein+m.protein,carbs:a.carbs+m.carbs,fat:a.fat+m.fat}),{calories:0,protein:0,carbs:0,fat:0});
+  const totalBurned=exercises.reduce((s,e)=>s+e.caloriesBurned,0);
+  const netCal=tot.calories-totalBurned;
   const calPct=Math.min(100,rnd((tot.calories/goals.calories)*100)), over=tot.calories>goals.calories;
   const remaining=Math.max(0,goals.calories-tot.calories), C=2*Math.PI*52;
+  const [showExForm,setShowExForm]=useState(false), [exName,setExName]=useState(''), [exCal,setExCal]=useState('');
+  const submitEx=()=>{
+    if(!exName.trim()||!exCal) return;
+    onAddExercise({id:newId(),date:todayISO(),time:nowTime(),name:exName.trim(),caloriesBurned:parseInt(exCal)||0});
+    setExName(''); setExCal(''); setShowExForm(false);
+  };
   return html`
     <div style=${{padding:16}}>
       <!-- Calorie hero -->
@@ -521,6 +557,7 @@ function TodayTab({meals,goals,onDelete,onEdit,setTab}){
           <p style=${{fontSize:13,color:'rgba(255,255,255,.8)'}}>
             ${over?`⚠️ ${(tot.calories-goals.calories).toLocaleString()} over goal`:`${remaining.toLocaleString()} remaining`}
           </p>
+          ${totalBurned>0?html`<p style=${{fontSize:12,color:'rgba(255,255,255,.65)',marginTop:3}}>🏃 ${totalBurned.toLocaleString()} burned · Net: ${netCal.toLocaleString()} kcal</p>`:null}
           <p style=${{fontSize:11,color:'rgba(255,255,255,.45)',marginTop:3}}>Goal: ${goals.calories.toLocaleString()} kcal</p>
         </div>
       </div>
@@ -541,6 +578,34 @@ function TodayTab({meals,goals,onDelete,onEdit,setTab}){
           <button className="btn btn-p" style=${{padding:'13px 28px',fontSize:15}} onClick=${()=>setTab('log')}>+ Log a meal</button>
         </div>`
       :html`<div>${[...meals].reverse().map(m=>html`<${MealCard} key=${m.id} meal=${m} onDelete=${()=>onDelete(m.id)} onEdit=${onEdit} />`)}</div>`}
+      <!-- Exercise -->
+      <div style=${{marginTop:20}}>
+        <div style=${{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
+          <p style=${{fontSize:16,fontWeight:800,color:'var(--text1)'}}>🏃 Exercise</p>
+          <button className="btn btn-g" style=${{fontSize:12,padding:'6px 12px'}} onClick=${()=>setShowExForm(!showExForm)}>+ Add</button>
+        </div>
+        ${showExForm?html`
+          <div className="card" style=${{padding:'13px 14px',marginBottom:8}}>
+            <input type="text" value=${exName} onInput=${e=>setExName(e.target.value)} onKeyDown=${e=>e.key==='Enter'&&submitEx()} placeholder="Activity (e.g. 30 min run)" style=${{marginBottom:8}} />
+            <div style=${{display:'flex',gap:8}}>
+              <input type="number" value=${exCal} onInput=${e=>setExCal(e.target.value)} onKeyDown=${e=>e.key==='Enter'&&submitEx()} placeholder="Calories burned" style=${{flex:1}} />
+              <button className="btn btn-p" onClick=${submitEx}>Add</button>
+              <button className="btn btn-g" onClick=${()=>setShowExForm(false)}>✕</button>
+            </div>
+          </div>`:null}
+        ${exercises.length===0&&!showExForm?html`<p style=${{fontSize:13,color:'var(--text3)'}}>No exercise logged today</p>`:null}
+        ${exercises.map(e=>html`
+          <div key=${e.id} className="card" style=${{padding:'11px 14px',marginBottom:6,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+            <div>
+              <p style=${{fontSize:14,fontWeight:700,color:'var(--text1)',margin:'0 0 2px'}}>${e.name}</p>
+              <p style=${{fontSize:11,color:'var(--text3)',margin:0}}>${e.time}</p>
+            </div>
+            <div style=${{display:'flex',alignItems:'center',gap:8}}>
+              <span style=${{fontSize:15,fontWeight:800,color:'#3b82f6'}}>−${e.caloriesBurned.toLocaleString()} kcal</span>
+              <button className="icon-btn danger" onClick=${()=>onDelExercise(e.id)}>🗑️</button>
+            </div>
+          </div>`)}
+      </div>
     </div>`;
 }
 
@@ -571,12 +636,20 @@ function GroceryPromptModal({plan,onConfirm,onClose}){
 
 // ── WeekTab ───────────────────────────────────────────────────────────────────
 const DAY_EMOJI=['🌙','🌟','🌤️','🌈','⚡','🎉','😴'];
-function WeekTab({allMeals,plans,onSavePlan,onDeletePlan,onUsePlan}){
-  const today=new Date(), dow=today.getDay();
-  const monday=new Date(today); monday.setDate(today.getDate()-(dow===0?6:dow-1));
-  const weekDates=DAYS.map((_,i)=>{const d=new Date(monday);d.setDate(monday.getDate()+i);return d.toISOString().slice(0,10);});
-  const ts=todayISO();
+function WeekTab({allMeals,plans,onSavePlan,onDeletePlan,onUsePlan,onDelete,onEdit,goals}){
+  const [weekOffset,setWeekOffset]=useState(0);
   const [savingDate,setSavingDate]=useState(null), [planName,setPlanName]=useState('');
+  const today=new Date(), dow=today.getDay();
+  const monday=new Date(today); monday.setDate(today.getDate()-(dow===0?6:dow-1)+weekOffset*7);
+  const weekDates=DAYS.map((_,i)=>{const d=new Date(monday);d.setDate(monday.getDate()+i);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;});
+  const ts=todayISO();
+  const weekMeals=allMeals.filter(m=>weekDates.includes(m.date));
+  const daysWithMeals=weekDates.filter(d=>allMeals.some(m=>m.date===d));
+  const weekTotalCal=weekMeals.reduce((s,m)=>s+m.calories,0);
+  const avgDailyCal=daysWithMeals.length?rnd(weekTotalCal/daysWithMeals.length):0;
+  const daysOnGoal=weekDates.filter(d=>{const c=allMeals.filter(m=>m.date===d).reduce((s,m)=>s+m.calories,0);return c>0&&c<=goals.calories;}).length;
+  const fmtD=iso=>{const[,m,d]=iso.split('-');return `${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1]} ${+d}`;};
+  const weekLabel=weekOffset===0?'This Week':weekOffset===-1?'Last Week':`${fmtD(weekDates[0])} – ${fmtD(weekDates[6])}`;
   const doSave=()=>{
     if(!planName.trim()) return;
     const dayMeals=allMeals.filter(m=>m.date===savingDate).map(({name,mealType,calories,protein,carbs,fat,notes})=>({name,mealType,calories,protein,carbs,fat,notes}));
@@ -585,7 +658,29 @@ function WeekTab({allMeals,plans,onSavePlan,onDeletePlan,onUsePlan}){
   };
   return html`
     <div style=${{padding:16}}>
-      <p style=${{fontSize:16,fontWeight:800,color:'var(--text1)',marginBottom:12}}>📅 This Week</p>
+      <div style=${{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}}>
+        <button onClick=${()=>setWeekOffset(o=>o-1)} style=${{background:'var(--surface)',border:'1.5px solid var(--border)',borderRadius:10,padding:'5px 14px',cursor:'pointer',fontSize:18,fontWeight:700,color:'var(--text2)'}}>‹</button>
+        <p style=${{fontSize:15,fontWeight:800,color:'var(--text1)',margin:0}}>📅 ${weekLabel}</p>
+        <button onClick=${()=>setWeekOffset(o=>Math.min(0,o+1))} style=${{background:'var(--surface)',border:'1.5px solid var(--border)',borderRadius:10,padding:'5px 14px',cursor:weekOffset>=0?'default':'pointer',fontSize:18,fontWeight:700,color:weekOffset>=0?'var(--border)':'var(--text2)'}} disabled=${weekOffset>=0}>›</button>
+      </div>
+      ${daysWithMeals.length?html`
+      <div style=${{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8,marginBottom:12}}>
+        <div className="card" style=${{padding:'10px',textAlign:'center'}}>
+          <p style=${{fontSize:11,color:'var(--text3)',margin:'0 0 2px'}}>Avg/day</p>
+          <p style=${{fontSize:17,fontWeight:800,color:'var(--accent)',margin:0}}>${avgDailyCal.toLocaleString()}</p>
+          <p style=${{fontSize:10,color:'var(--text3)',margin:0}}>kcal</p>
+        </div>
+        <div className="card" style=${{padding:'10px',textAlign:'center'}}>
+          <p style=${{fontSize:11,color:'var(--text3)',margin:'0 0 2px'}}>On goal</p>
+          <p style=${{fontSize:17,fontWeight:800,color:'var(--primary)',margin:0}}>${daysOnGoal}/${daysWithMeals.length}</p>
+          <p style=${{fontSize:10,color:'var(--text3)',margin:0}}>days</p>
+        </div>
+        <div className="card" style=${{padding:'10px',textAlign:'center'}}>
+          <p style=${{fontSize:11,color:'var(--text3)',margin:'0 0 2px'}}>Total</p>
+          <p style=${{fontSize:17,fontWeight:800,color:'var(--text1)',margin:0}}>${weekTotalCal.toLocaleString()}</p>
+          <p style=${{fontSize:10,color:'var(--text3)',margin:0}}>kcal</p>
+        </div>
+      </div>`:null}
       ${DAYS.map((dayName,i)=>{
         const date=weekDates[i], dayMeals=allMeals.filter(m=>m.date===date);
         const totalCal=dayMeals.reduce((s,m)=>s+m.calories,0), isToday=date===ts;
@@ -606,15 +701,15 @@ function WeekTab({allMeals,plans,onSavePlan,onDeletePlan,onUsePlan}){
               </div>
               <!-- Meals -->
               ${dayMeals.length?html`
-                <div style=${{display:'flex',flexDirection:'column',gap:3}}>
-                  ${MEAL_TYPES.map(type=>{
-                    const tm=dayMeals.filter(m=>m.mealType===type); if(!tm.length) return null;
-                    const meta=MEAL_META[type];
-                    return html`<div key=${type} style=${{display:'flex',gap:8,fontSize:12,alignItems:'baseline'}}>
-                      <span style=${{color:meta.fg,width:72,flexShrink:0,fontWeight:700}}>${meta.emoji} ${type}</span>
-                      <span style=${{color:'var(--text2)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>${tm.map(m=>m.name).join(', ')}</span>
-                    </div>`;
-                  })}
+                <div style=${{display:'flex',flexDirection:'column',gap:5}}>
+                  ${dayMeals.map(m=>html`
+                    <div key=${m.id} style=${{display:'flex',alignItems:'center',gap:6,fontSize:12}}>
+                      <span style=${{color:MEAL_META[m.mealType].fg,flexShrink:0}}>${MEAL_META[m.mealType].emoji}</span>
+                      <span style=${{flex:1,color:'var(--text2)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>${m.name}</span>
+                      <span style=${{color:'var(--accent)',fontWeight:700,flexShrink:0,marginRight:2}}>${m.calories}</span>
+                      <button className="icon-btn" onClick=${()=>onEdit(m)} style=${{fontSize:12,padding:'2px 4px'}}>✏️</button>
+                      <button className="icon-btn danger" onClick=${()=>onDelete(m.id)} style=${{fontSize:12,padding:'2px 4px'}}>🗑️</button>
+                    </div>`)}
                 </div>`
               :html`<p style=${{fontSize:12,color:'var(--border)'}}>No meals logged</p>`}
             </div>
@@ -713,6 +808,27 @@ function Settings({onClose,apiKey,setApiKey,goals,setGoals}){
   const [result,setResult]=useState(null);
   const calculate=()=>{const r=calcTDEE(calc);setResult(r);setG(r);};
   const ok=()=>{setApiKey(key.trim());setGoals(g);onClose();};
+  const exportData=()=>{
+    const data={meals:load('meals',[]),goals:load('goals',GOALS_DEF),plans:load('plans',[]),groceries:load('groceries',[]),exportedAt:new Date().toISOString()};
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a'); a.href=url; a.download=`meal-tracker-${todayISO()}.json`; a.click(); URL.revokeObjectURL(url);
+  };
+  const importData=e=>{
+    const file=e.target.files[0]; if(!file) return;
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      try{
+        const data=JSON.parse(ev.target.result);
+        if(data.meals) persist('meals',data.meals);
+        if(data.goals) persist('goals',data.goals);
+        if(data.plans) persist('plans',data.plans);
+        if(data.groceries) persist('groceries',data.groceries);
+        window.location.reload();
+      }catch{alert('Invalid backup file.');}
+    };
+    reader.readAsText(file);
+  };
   return html`
     <div className="sheet-backdrop" onClick=${e=>e.target===e.currentTarget&&onClose()}>
       <div className="sheet">
@@ -777,6 +893,18 @@ function Settings({onClose,apiKey,setApiKey,goals,setGoals}){
               <input type="number" value=${g[k]} onInput=${e=>setG(p=>({...p,[k]:parseInt(e.target.value)||0}))} style=${{width:90,textAlign:'right'}} />
             </div>`)}
         </div>
+        <!-- Backup & Restore -->
+        <div style=${{marginBottom:20,padding:14,background:'var(--bg)',borderRadius:14}}>
+          <h3 style=${{fontSize:14,fontWeight:700,color:'var(--text2)',marginBottom:6}}>💾 Backup & Restore</h3>
+          <p style=${{fontSize:11,color:'var(--text3)',marginBottom:10,lineHeight:1.5}}>Export all your meals, goals & plans as a file. Import to restore on any device.</p>
+          <div style=${{display:'flex',gap:8}}>
+            <button className="btn btn-g" style=${{flex:1,fontSize:13}} onClick=${exportData}>⬇️ Export</button>
+            <label className="btn btn-g" style=${{flex:1,fontSize:13,textAlign:'center',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>
+              ⬆️ Import
+              <input type="file" accept=".json" style=${{display:'none'}} onChange=${importData} />
+            </label>
+          </div>
+        </div>
         <div style=${{display:'flex',gap:10}}>
           <button className="btn btn-g" style=${{flex:1}} onClick=${onClose}>Cancel</button>
           <button className="btn btn-p" style=${{flex:2}} onClick=${ok}>💾 Save</button>
@@ -794,10 +922,13 @@ function App(){
   const [allMeals,setAllMeals]=useState(()=>load('meals',[]));
   const [plans,setPlans_]=useState(()=>load('plans',[]));
   const [groceries,setGroceries_]=useState(()=>load('groceries',[]));
+  const [exercises,setExercises_]=useState(()=>load('exercises',[]));
+  const [favorites,setFavs_]=useState(()=>load('favorites',[]));
   const [editingMeal,setEditingMeal]=useState(null);
   const [groceryPrompt,setGroceryPrompt]=useState(null);
 
   const ts=todayISO(), todayMeals=allMeals.filter(m=>m.date===ts);
+  const todayExercises=exercises.filter(e=>e.date===ts);
   const todayCal=todayMeals.reduce((s,m)=>s+m.calories,0), calPct=Math.min(100,rnd((todayCal/goals.calories)*100)), calPctReal=rnd((todayCal/goals.calories)*100);
 
   const setApiKey=k=>{setApiKey_(k);persist('apiKey',k);};
@@ -805,6 +936,9 @@ function App(){
   const addMeal=m=>setAllMeals(p=>{const n=[...p,m];persist('meals',n);return n;});
   const delMeal=id=>setAllMeals(p=>{const n=p.filter(m=>m.id!==id);persist('meals',n);return n;});
   const editMeal=updated=>{ setAllMeals(p=>{const n=p.map(m=>m.id===updated.id?updated:m);persist('meals',n);return n;}); setEditingMeal(null); };
+  const addExercise=e=>setExercises_(p=>{const n=[...p,e];persist('exercises',n);return n;});
+  const delExercise=id=>setExercises_(p=>{const n=p.filter(e=>e.id!==id);persist('exercises',n);return n;});
+  const toggleFav=id=>setFavs_(p=>{const n=p.includes(id)?p.filter(x=>x!==id):[...p,id];persist('favorites',n);return n;});
   const savePlan=(name,meals)=>{const n=[...plans,{id:newId(),name,createdAt:ts,meals}];setPlans_(n);persist('plans',n);};
   const deletePlan=id=>{const n=plans.filter(p=>p.id!==id);setPlans_(n);persist('plans',n);};
   const usePlan=plan=>setGroceryPrompt(plan);
@@ -856,9 +990,9 @@ function App(){
 
       <!-- Content -->
       <div style=${{flex:1,overflowY:'auto'}}>
-        ${tab==='log'    ? html`<${LogTab}     apiKey=${apiKey} onLog=${addMeal} allMeals=${allMeals} />` : null}
-        ${tab==='today'  ? html`<${TodayTab}   meals=${todayMeals} goals=${goals} onDelete=${delMeal} onEdit=${setEditingMeal} setTab=${setTab} />` : null}
-        ${tab==='week'   ? html`<${WeekTab}    allMeals=${allMeals} plans=${plans} onSavePlan=${savePlan} onDeletePlan=${deletePlan} onUsePlan=${usePlan} />` : null}
+        ${tab==='log'    ? html`<${LogTab}     apiKey=${apiKey} onLog=${addMeal} allMeals=${allMeals} favorites=${favorites} onToggleFav=${toggleFav} />` : null}
+        ${tab==='today'  ? html`<${TodayTab}   meals=${todayMeals} goals=${goals} onDelete=${delMeal} onEdit=${setEditingMeal} setTab=${setTab} exercises=${todayExercises} onAddExercise=${addExercise} onDelExercise=${delExercise} />` : null}
+        ${tab==='week'   ? html`<${WeekTab}    allMeals=${allMeals} plans=${plans} onSavePlan=${savePlan} onDeletePlan=${deletePlan} onUsePlan=${usePlan} onDelete=${delMeal} onEdit=${setEditingMeal} goals=${goals} />` : null}
         ${tab==='grocery'? html`<${GroceryTab} items=${groceries} onAdd=${addGroceryItem} onToggle=${toggleGrocery} onDelete=${deleteGrocery} onClearChecked=${clearChecked} />` : null}
       </div>
 
