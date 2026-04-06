@@ -806,8 +806,10 @@ function Settings({onClose,apiKey,setApiKey,goals,setGoals}){
   const [key,setKey]=useState(apiKey), [g,setG]=useState(goals);
   const [calc,setCalc]=useState({sex:'male',age:30,weight:75,height:175,activity:'moderate',goal:'maintain'});
   const [result,setResult]=useState(null);
+  const isFirst=useRef(true);
+  useEffect(()=>{if(isFirst.current){isFirst.current=false;return;}setGoals(g);},[g]);
   const calculate=()=>{const r=calcTDEE(calc);setResult(r);setG(r);};
-  const ok=()=>{setApiKey(key.trim());setGoals(g);onClose();};
+  const ok=()=>{setApiKey(key.trim());onClose();};
   const exportData=()=>{
     const data={meals:load('meals',[]),goals:load('goals',GOALS_DEF),plans:load('plans',[]),groceries:load('groceries',[]),exportedAt:new Date().toISOString()};
     const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
