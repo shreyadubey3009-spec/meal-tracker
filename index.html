@@ -858,7 +858,7 @@ function Settings({onClose,apiKey,setApiKey,goals,setGoals}){
               <div key=${k}>
                 <label style=${{fontSize:11,fontWeight:700,color:'var(--text2)',display:'block',marginBottom:4,textTransform:'uppercase',letterSpacing:'0.4px'}}>${l}</label>
                 <div style=${{position:'relative'}}>
-                  <input type="number" value=${calc[k]} onBlur=${e=>updateCalc({[k]:parseFloat(e.target.value)||0})} style=${{paddingRight:28}} />
+                  <input type="number" value=${calc[k]} onInput=${e=>setCalc(c=>({...c,[k]:parseFloat(e.target.value)||0}))} onBlur=${e=>persist('tdeeCalc',calc)} style=${{paddingRight:28}} />
                   <span style=${{position:'absolute',right:9,top:'50%',transform:'translateY(-50%)',fontSize:11,color:'var(--text3)'}}>${u}</span>
                 </div>
               </div>`)}
