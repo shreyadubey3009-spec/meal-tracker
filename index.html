@@ -358,7 +358,7 @@ function FoodSearch({onLog,favorites,onToggleFav}){
       ${!q?html`<div>
           ${favFoods.length?html`
             <p style=${{fontSize:13,fontWeight:700,color:'var(--text2)',marginBottom:8}}>⭐ Favorites</p>
-            ${favFoods.map(food=>html`<${FoodRow} food=${food} />`)}
+            ${favFoods.map(food=>html`<${FoodRow} key=${food.id} food=${food} />`)}
             <p style=${{fontSize:13,fontWeight:700,color:'var(--text2)',margin:'16px 0 8px'}}>All foods</p>`:null}
           <div style=${{textAlign:'center',padding:favFoods.length?'16px 0':'40px 0'}}>
             <div style=${{fontSize:48,marginBottom:10}}>🥦🍗🍌</div>
@@ -434,7 +434,7 @@ function ChatLogger({apiKey,onLog}){
                             ${isActive?html`
                               <div style=${{display:'flex',alignItems:'center',gap:8,borderTop:'1px solid var(--border)',paddingTop:8}}>
                                 <span style=${{fontSize:11,color:'var(--text3)',fontWeight:600,flex:1}}>Servings</span>
-                                <button onClick=${()=>setServings(sv=>{const n=[...sv];n[mi]=Math.max(0.5,+(n[mi]-0.5).toFixed(1));return n;})} style=${{border:'1px solid var(--border)',borderRadius:8,width:28,height:28,cursor:'pointer',background:'var(--bg)',fontSize:16,display:'flex',alignItems:'center',justifyContent:'center'}}>−</button>
+                                <button onClick=${()=>setServings(sv=>{const n=[...sv];n[mi]=Math.max(0.5,Math.round((n[mi]-0.5)*10)/10);return n;})} style=${{border:'1px solid var(--border)',borderRadius:8,width:28,height:28,cursor:'pointer',background:'var(--bg)',fontSize:16,display:'flex',alignItems:'center',justifyContent:'center'}}>−</button>
                                 <span style=${{minWidth:28,textAlign:'center',fontSize:14,fontWeight:800,color:'var(--text1)'}}>${s}</span>
                                 <button onClick=${()=>setServings(sv=>{const n=[...sv];n[mi]=+(n[mi]+0.5).toFixed(1);return n;})} style=${{border:'1px solid var(--border)',borderRadius:8,width:28,height:28,cursor:'pointer',background:'var(--bg)',fontSize:16,display:'flex',alignItems:'center',justifyContent:'center'}}>+</button>
                               </div>`:null}
@@ -896,8 +896,8 @@ function Settings({onClose,apiKey,setApiKey,goals,setGoals}){
           ${[['calories','🔥 Calories','kcal'],['protein','💪 Protein','g'],['carbs','🌾 Carbs','g'],['fat','🥑 Fat','g']].map(([k,l,u])=>html`
             <div key=${k} style=${{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
               <label style=${{fontSize:13,fontWeight:600,color:'var(--text1)'}}>${l} (${u})</label>
-              <input type="number" value=${g[k]||''} placeholder="0"
-                onInput=${e=>setG(p=>({...p,[k]:e.target.value}))}
+              <input type="number" min="0" value=${g[k]||''} placeholder="0"
+                onInput=${e=>setG(p=>({...p,[k]:parseInt(e.target.value)||0}))}
                 onBlur=${e=>{const v=parseInt(e.target.value)||0;const newG={...g,[k]:v};setG(newG);saveGoals(newG);}}
                 style=${{width:90,textAlign:'right'}} />
             </div>`)}
