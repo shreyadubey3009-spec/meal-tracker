@@ -141,7 +141,7 @@ const DB = [
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const rnd       = n => Math.round(n);
-const todayISO  = () => new Date().toISOString().slice(0,10);
+const todayISO  = () => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
 const nowTime   = () => new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
 const calcNut   = (f,g) => ({ calories:rnd(f.cal*g/100), protein:rnd(f.p*g/100), carbs:rnd(f.c*g/100), fat:rnd(f.f*g/100) });
 const dbSearch  = q => { if(!q.trim()) return []; const lq=q.toLowerCase(); return DB.filter(f=>f.name.toLowerCase().includes(lq)||f.cat.toLowerCase().includes(lq)); };
